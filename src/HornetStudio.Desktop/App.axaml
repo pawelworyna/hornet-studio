@@ -1,0 +1,44 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="HornetStudio.Desktop.App"
+             xmlns:local="using:HornetStudio.Desktop"
+             RequestedThemeVariant="Default">
+             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+
+    <Application.DataTemplates>
+        <local:ViewLocator />
+    </Application.DataTemplates>
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://HornetStudio.Desktop/Assets/Geometries.axaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <!-- Hornet Green Palette -->
+            <Color x:Key="HornetGreenColor">#10B981</Color>
+            <Color x:Key="HornetGreenDarkColor">#059669</Color>
+            <Color x:Key="HornetGreenLightColor">#34D399</Color>
+            <Color x:Key="HornetBgDarkColor">#0F1216</Color>
+            <Color x:Key="HornetBgCardColor">#171B22</Color>
+            <Color x:Key="HornetBgSidebarColor">#13171D</Color>
+            <Color x:Key="HornetBorderColor">#262D38</Color>
+            <Color x:Key="HornetTextDimColor">#94A3B8</Color>
+
+            <SolidColorBrush x:Key="HornetGreenBrush" Color="{StaticResource HornetGreenColor}" />
+            <SolidColorBrush x:Key="HornetGreenDarkBrush" Color="{StaticResource HornetGreenDarkColor}" />
+            <SolidColorBrush x:Key="HornetGreenLightBrush" Color="{StaticResource HornetGreenLightColor}" />
+            <SolidColorBrush x:Key="HornetBgDarkBrush" Color="{StaticResource HornetBgDarkColor}" />
+            <SolidColorBrush x:Key="HornetBgCardBrush" Color="{StaticResource HornetBgCardColor}" />
+            <SolidColorBrush x:Key="HornetBgSidebarBrush" Color="{StaticResource HornetBgSidebarColor}" />
+            <SolidColorBrush x:Key="HornetBorderBrush" Color="{StaticResource HornetBorderColor}" />
+            <SolidColorBrush x:Key="HornetTextDimBrush" Color="{StaticResource HornetTextDimColor}" />
+        </ResourceDictionary>
+    </Application.Resources>
+
+    <Application.Styles>
+        <FluentTheme />
+        <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
+        <StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />
+    </Application.Styles>
+</Application>

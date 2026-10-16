@@ -1,0 +1,42 @@
+[
+  {
+    "first_name": "Michał",
+    "last_name": "Kaczmarek",
+    "email": "m.kaczmarek@cloudnet.pl",
+    "company": "CloudNet Solutions",
+    "city": "Warszawa",
+    "credit_limit": 15000.00
+  },
+  {
+    "first_name": "Monika",
+    "last_name": "Adamska",
+    "email": "monika.adamska@fintech.io",
+    "company": "FinTech Polska",
+    "city": "Kraków",
+    "credit_limit": 25000.00
+  },
+  {
+    "first_name": "Piotr",
+    "last_name": "Zieliński",
+    "email": "p.zielinski@devcorp.com",
+    "company": "DevCorp",
+    "city": "Wrocław",
+    "credit_limit": 8000.00
+  },
+  {
+    "first_name": "Karolina",
+    "last_name": "Wójcik",
+    "email": "k.wojcik@agencja-karo.pl",
+    "company": "Agencja Karo",
+    "city": "Poznań",
+    "credit_limit": 12500.00
+  },
+  {
+    "first_name": "Robert",
+    "last_name": "Nowicki",
+    "email": "robert@nowicki-it.pl",
+    "company": "Nowicki IT Consulting",
+    "city": "Gdańsk",
+    "credit_limit": 18000.00
+  }
+]

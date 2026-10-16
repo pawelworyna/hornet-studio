@@ -1,0 +1,162 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:HornetStudio.Desktop.ViewModels"
+             x:Class="HornetStudio.Desktop.Views.CellInspectorView"
+             x:DataType="vm:CellInspectorViewModel">
+
+  <Border Background="#13171D"
+          BorderBrush="#262D38"
+          BorderThickness="1,0,0,0">
+    <Grid RowDefinitions="Auto,Auto,*,Auto">
+      <!-- Header: Column Name, Data Type & Close -->
+      <Border Grid.Row="0"
+              Background="#171B22"
+              BorderBrush="#262D38"
+              BorderThickness="0,0,0,1"
+              Padding="12,10">
+        <Grid ColumnDefinitions="*,Auto,Auto">
+          <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+            <TextBlock Text="🔬" FontSize="14" VerticalAlignment="Center" />
+            <TextBlock Text="{Binding ColumnName}"
+                       FontWeight="Bold"
+                       FontSize="13"
+                       Foreground="#F1F5F9"
+                       VerticalAlignment="Center"
+                       TextTrimming="CharacterEllipsis" />
+            <Border Background="#1E293B"
+                    BorderBrush="#38BDF8"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    Padding="6,2"
+                    VerticalAlignment="Center">
+              <TextBlock Text="{Binding DataType}"
+                         FontSize="10"
+                         FontWeight="SemiBold"
+                         Foreground="#38BDF8" />
+            </Border>
+          </StackPanel>
+
+          <!-- Format Status Badge -->
+          <TextBlock Grid.Column="1"
+                     Text="{Binding FormatStatus}"
+                     FontSize="11"
+                     Foreground="#10B981"
+                     VerticalAlignment="Center"
+                     Margin="8,0" />
+
+          <!-- Close Button -->
+          <Button Grid.Column="2"
+                  Command="{Binding CloseCommand}"
+                  Background="Transparent"
+                  BorderThickness="0"
+                  Padding="6"
+                  ToolTip.Tip="Close Cell Inspector">
+            <Path Width="10" Height="10" Stretch="Uniform" Fill="#94A3B8" Data="{StaticResource IconCancel}" />
+          </Button>
+        </Grid>
+      </Border>
+
+      <!-- Action Bar: Formatting Tools & Stats -->
+      <Border Grid.Row="1"
+              Background="#0F1216"
+              BorderBrush="#262D38"
+              BorderThickness="0,0,0,1"
+              Padding="10,6">
+        <Grid ColumnDefinitions="Auto,*">
+          <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6">
+            <Button Content="{}{ } Format JSON"
+                    Command="{Binding PrettifyJsonCommand}"
+                    Background="#1A2029"
+                    BorderBrush="#262D38"
+                    BorderThickness="1"
+                    Foreground="#F59E0B"
+                    FontSize="11"
+                    FontWeight="SemiBold"
+                    Padding="8,4"
+                    CornerRadius="4"
+                    ToolTip.Tip="Format and Indent JSON" />
+
+            <Button Content="Compact JSON"
+                    Command="{Binding MinifyJsonCommand}"
+                    Background="#1A2029"
+                    BorderBrush="#262D38"
+                    BorderThickness="1"
+                    Foreground="#94A3B8"
+                    FontSize="11"
+                    Padding="8,4"
+                    CornerRadius="4"
+                    ToolTip.Tip="Minify JSON" />
+
+            <Button Content="📋 Copy"
+                    Command="{Binding CopyCommand}"
+                    Background="#1A2029"
+                    BorderBrush="#262D38"
+                    BorderThickness="1"
+                    Foreground="#94A3B8"
+                    FontSize="11"
+                    Padding="8,4"
+                    CornerRadius="4"
+                    ToolTip.Tip="Copy to Clipboard" />
+          </StackPanel>
+
+          <!-- Character & Line Stats -->
+          <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" VerticalAlignment="Center">
+            <TextBlock Text="{Binding ContentLength, StringFormat='{}{0:N0} chars'}"
+                       FontSize="11"
+                       Foreground="#64748B" />
+            <TextBlock Text="•" FontSize="11" Foreground="#475569" />
+            <TextBlock Text="{Binding LineCount, StringFormat='{}{0} lines'}"
+                       FontSize="11"
+                       Foreground="#64748B" />
+          </StackPanel>
+        </Grid>
+      </Border>
+
+      <!-- Main Text / JSON Editor Area -->
+      <TextBox Grid.Row="2"
+               Text="{Binding Content, Mode=TwoWay}"
+               AcceptsReturn="True"
+               AcceptsTab="True"
+               TextWrapping="Wrap"
+               ScrollViewer.VerticalScrollBarVisibility="Auto"
+               ScrollViewer.HorizontalScrollBarVisibility="Auto"
+               FontFamily="Consolas, Cascadia Code, monospace"
+               FontSize="12"
+               Background="#0F1216"
+               Foreground="#F1F5F9"
+               BorderThickness="0"
+               Padding="10" />
+
+      <!-- Footer: Apply & Reset Changes -->
+      <Border Grid.Row="3"
+              Background="#171B22"
+              BorderBrush="#262D38"
+              BorderThickness="0,1,0,0"
+              Padding="10,8">
+        <Grid ColumnDefinitions="Auto,*,Auto">
+          <Button Grid.Column="0"
+                  Content="↺ Reset"
+                  Command="{Binding ResetCommand}"
+                  IsEnabled="{Binding IsModified}"
+                  Background="#262D38"
+                  Foreground="#94A3B8"
+                  FontSize="11"
+                  Padding="10,6"
+                  CornerRadius="4" />
+
+          <Button Grid.Column="2"
+                  Content="💾 Apply to Cell"
+                  Command="{Binding ApplyCommand}"
+                  IsEnabled="{Binding IsModified}"
+                  Background="#10B981"
+                  Foreground="#0F1216"
+                  FontWeight="Bold"
+                  FontSize="12"
+                  Padding="14,6"
+                  CornerRadius="4"
+                  ToolTip.Tip="Update cell value with edited content" />
+        </Grid>
+      </Border>
+    </Grid>
+  </Border>
+</UserControl>

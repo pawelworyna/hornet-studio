@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/HornetStudio.Core/HornetStudio.Core.csproj" />
+    <Project Path="src/HornetStudio.Desktop/HornetStudio.Desktop.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/HornetStudio.Tests/HornetStudio.Tests.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,117 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:HornetStudio.Desktop.ViewModels.Tabs"
+             x:Class="HornetStudio.Desktop.Views.DataImportView"
+             x:DataType="vm:DataImportViewModel">
+
+  <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <StackPanel Margin="30" Spacing="20" MaxWidth="760" HorizontalAlignment="Center">
+      <!-- Clean Header -->
+      <StackPanel Spacing="4" Margin="0,0,0,6">
+        <TextBlock Text="Import Data" FontSize="18" FontWeight="Bold" Foreground="#F1F5F9" />
+        <TextBlock Text="Import CSV or JSON records into database tables with automatic column mapping and preview."
+                   FontSize="12" Foreground="#94A3B8" />
+      </StackPanel>
+
+      <!-- Step 1: Source File -->
+      <Border Background="#171B22" BorderBrush="#262D38" BorderThickness="1" CornerRadius="8" Padding="18">
+        <StackPanel Spacing="10">
+          <TextBlock Text="1. Select Source File (.csv or .json)" FontSize="14" FontWeight="Bold" Foreground="#F1F5F9" />
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBox Grid.Column="0" Text="{Binding SourceFilePath}" Background="#0F1216" BorderBrush="#262D38" Margin="0,0,8,0" PlaceholderText="Select a CSV or JSON file..." />
+            <Button Grid.Column="1" Content="Browse File..." Click="OnBrowseFileClicked" Background="#262D38" Foreground="#F1F5F9" Padding="14,8" CornerRadius="4" />
+          </Grid>
+        </StackPanel>
+      </Border>
+
+      <!-- Step 2: Target Table & Options -->
+      <Border Background="#171B22" BorderBrush="#262D38" BorderThickness="1" CornerRadius="8" Padding="18">
+        <StackPanel Spacing="14">
+          <TextBlock Text="2. Import Options &amp; Target Table" FontSize="14" FontWeight="Bold" Foreground="#F1F5F9" />
+          <Grid ColumnDefinitions="*,*">
+            <StackPanel Grid.Column="0" Spacing="6" Margin="0,0,10,0">
+              <TextBlock Text="Target Table" FontSize="12" Foreground="#94A3B8" />
+              <ComboBox ItemsSource="{Binding AvailableTables}"
+                        SelectedItem="{Binding TargetTable}"
+                        HorizontalAlignment="Stretch"
+                        Background="#0F1216"
+                        BorderBrush="#262D38" />
+            </StackPanel>
+
+            <!-- CSV Delimiter (only for CSV) -->
+            <StackPanel Grid.Column="1" Spacing="6" IsVisible="{Binding !IsJsonFile}">
+              <TextBlock Text="Delimiter" FontSize="12" Foreground="#94A3B8" />
+              <TextBox Text="{Binding Delimiter}"
+                       Background="#0F1216"
+                       BorderBrush="#262D38"
+                       Width="60"
+                       HorizontalAlignment="Left" />
+            </StackPanel>
+          </Grid>
+
+          <!-- CSV Header Checkbox (only for CSV) -->
+          <CheckBox Content="First row contains column headers"
+                    IsChecked="{Binding HasHeader}"
+                    IsVisible="{Binding !IsJsonFile}"
+                    Foreground="#CBD5E1" />
+
+          <!-- JSON Notification Note -->
+          <Border Background="#10B98115"
+                  BorderBrush="#10B981"
+                  BorderThickness="1"
+                  CornerRadius="4"
+                  Padding="12,8"
+                  IsVisible="{Binding IsJsonFile}">
+            <TextBlock Text="🌐 JSON file detected: Object keys will be automatically mapped to matching database columns."
+                       FontSize="12" Foreground="#34D399" />
+          </Border>
+
+          <Button Content="Preview Data"
+                  Command="{Binding LoadPreviewCommand}"
+                  Background="#262D38"
+                  Foreground="#F1F5F9"
+                  Padding="14,6"
+                  CornerRadius="4"
+                  HorizontalAlignment="Left" />
+        </StackPanel>
+      </Border>
+
+      <!-- Step 3: Preview Grid -->
+      <Border Background="#171B22" BorderBrush="#262D38" BorderThickness="1" CornerRadius="8" Padding="18"
+              IsVisible="{Binding PreviewColumns.Count}">
+        <StackPanel Spacing="10">
+          <TextBlock Text="3. Preview (First 10 Rows)" FontSize="14" FontWeight="Bold" Foreground="#F1F5F9" />
+          <DataGrid x:Name="PreviewGrid"
+                    AutoGenerateColumns="False"
+                    IsReadOnly="True"
+                    GridLinesVisibility="All"
+                    MaxHeight="200"
+                    Background="#0F1216"
+                    BorderThickness="0" />
+        </StackPanel>
+      </Border>
+
+      <!-- Step 4: Execute -->
+      <Border Background="#171B22" BorderBrush="#262D38" BorderThickness="1" CornerRadius="8" Padding="18">
+        <StackPanel Spacing="12">
+          <TextBlock Text="4. Execute Import" FontSize="14" FontWeight="Bold" Foreground="#F1F5F9" />
+          <Button Content="{Binding ImportButtonText}"
+                  Command="{Binding ExecuteImportCommand}"
+                  IsEnabled="{Binding !IsImporting}"
+                  Background="#10B981"
+                  Foreground="#0F1216"
+                  FontWeight="Bold"
+                  FontSize="14"
+                  Padding="24,10"
+                  CornerRadius="4"
+                  HorizontalAlignment="Left" />
+        </StackPanel>
+      </Border>
+
+      <!-- Status Message -->
+      <Border Background="#12151A" BorderBrush="#262D38" BorderThickness="1" CornerRadius="6" Padding="14">
+        <TextBlock Text="{Binding StatusMessage}" FontSize="12" Foreground="#34D399" TextWrapping="Wrap" />
+      </Border>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

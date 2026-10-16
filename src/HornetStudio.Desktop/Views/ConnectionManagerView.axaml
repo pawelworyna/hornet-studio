@@ -1,0 +1,339 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:HornetStudio.Desktop.ViewModels"
+             x:Class="HornetStudio.Desktop.Views.ConnectionManagerView"
+             x:DataType="vm:ConnectionManagerViewModel">
+
+  <Grid>
+    <!-- Normal View: Split between connection list and detail/welcome -->
+    <Grid ColumnDefinitions="380,*" IsVisible="{Binding IsNotEditing}">
+      <!-- Left: Connection List & Sidebar Actions -->
+      <Border Grid.Column="0"
+              Background="#13171D"
+              BorderBrush="#262D38"
+              BorderThickness="0,0,1,0"
+              Padding="16">
+        <Grid RowDefinitions="Auto,Auto,*,Auto">
+          <!-- Action Buttons -->
+          <StackPanel Grid.Row="0" Spacing="8" Margin="0,0,0,12">
+            <Button Content="➕ New Connection"
+                    Command="{Binding NewConnectionCommand}"
+                    Background="#10B981"
+                    Foreground="#0F1216"
+                    FontWeight="Bold"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    Padding="12,10"
+                    CornerRadius="6" />
+
+            <Button Content="⚡ Restore Last Session"
+                    ToolTip.Tip="Reopen previous session with all open tabs and query drafts"
+                    Command="{Binding RestoreLastSessionCommand}"
+                    IsVisible="{Binding HasLastSession}"
+                    Background="#1E293B"
+                    BorderBrush="#10B981"
+                    BorderThickness="1"
+                    Foreground="#34D399"
+                    FontWeight="SemiBold"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    Padding="12,9"
+                    CornerRadius="6" />
+
+            <Grid ColumnDefinitions="*,*">
+              <Button Grid.Column="0"
+                      Content="📥 Import Connections"
+                      ToolTip.Tip="Import existing connections and saved queries"
+                      Command="{Binding ImportExternalConnectionsCommand}"
+                      Background="#1A2029"
+                      BorderBrush="#262D38"
+                      BorderThickness="1"
+                      Foreground="#94A3B8"
+                      HorizontalAlignment="Stretch"
+                      HorizontalContentAlignment="Center"
+                      FontSize="11"
+                      Padding="6,7"
+                      CornerRadius="4"
+                      Margin="0,0,4,0" />
+
+              <Button Grid.Column="1"
+                      Content="🔒 Master Password"
+                      Command="{Binding ToggleMasterPasswordDialogCommand}"
+                      Background="#1A2029"
+                      BorderBrush="#262D38"
+                      BorderThickness="1"
+                      Foreground="#94A3B8"
+                      HorizontalAlignment="Stretch"
+                      HorizontalContentAlignment="Center"
+                      FontSize="11"
+                      Padding="6,7"
+                      CornerRadius="4"
+                      Margin="4,0,0,0" />
+            </Grid>
+          </StackPanel>
+
+          <!-- Search Box -->
+          <TextBox Grid.Row="1"
+                   Text="{Binding SearchQuery}"
+                   PlaceholderText="Search saved connections..."
+                   Background="#0F1216"
+                   BorderBrush="#262D38"
+                   Foreground="#F1F5F9"
+                   Padding="10,8"
+                   CornerRadius="4"
+                   Margin="0,0,0,12" />
+
+          <!-- Connections List -->
+          <ListBox Grid.Row="2"
+                   ItemsSource="{Binding FilteredConnections}"
+                   SelectedItem="{Binding SelectedConnection}"
+                   Background="Transparent"
+                   BorderThickness="0">
+            <ListBox.ItemTemplate>
+              <DataTemplate DataType="vm:ConnectionItemViewModel">
+                <Border Background="#171B22"
+                        BorderBrush="#262D38"
+                        BorderThickness="1"
+                        CornerRadius="6"
+                        Padding="12,10"
+                        Margin="0,0,0,8">
+                  <Border.ContextMenu>
+                    <ContextMenu>
+                      <MenuItem Header="⚡ Connect"
+                                Command="{Binding $parent[UserControl].((vm:ConnectionManagerViewModel)DataContext).ConnectCommand}"
+                                CommandParameter="{Binding}" />
+                      <MenuItem Header="✏️ Edit Connection"
+                                Command="{Binding $parent[UserControl].((vm:ConnectionManagerViewModel)DataContext).EditConnectionCommand}"
+                                CommandParameter="{Binding}" />
+                      <Separator />
+                      <MenuItem Header="🗑️ Delete Connection"
+                                Command="{Binding $parent[UserControl].((vm:ConnectionManagerViewModel)DataContext).DeleteConnectionCommand}"
+                                CommandParameter="{Binding}" />
+                    </ContextMenu>
+                  </Border.ContextMenu>
+                  <Grid ColumnDefinitions="Auto,*,Auto">
+                    <!-- Color Strip -->
+                    <Border Grid.Column="0"
+                            Width="4"
+                            CornerRadius="2"
+                            Background="{Binding LabelColor}"
+                            Margin="0,0,10,0" />
+
+                    <!-- Connection Info -->
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                      <TextBlock Text="{Binding Name}"
+                                 FontWeight="Bold"
+                                 FontSize="13"
+                                 Foreground="#F1F5F9" />
+                      <TextBlock Text="{Binding Subtitle}"
+                                 FontSize="11"
+                                 Foreground="#94A3B8"
+                                 TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+
+                    <!-- Driver Badge -->
+                    <Border Grid.Column="2"
+                            Background="#10B9811A"
+                            BorderBrush="#10B981"
+                            BorderThickness="1"
+                            CornerRadius="3"
+                            Padding="6,2"
+                            VerticalAlignment="Center">
+                      <TextBlock Text="{Binding DriverBadge}"
+                                 FontSize="10"
+                                 FontWeight="SemiBold"
+                                 Foreground="#34D399" />
+                    </Border>
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+
+          <!-- Status / Notice Toast -->
+          <TextBlock Grid.Row="3"
+                     Text="{Binding StatusMessage}"
+                     FontSize="11"
+                     Foreground="#34D399"
+                     TextWrapping="Wrap"
+                     Margin="0,8,0,0" />
+        </Grid>
+      </Border>
+
+      <!-- Right: Detail Panel / Welcome Screen -->
+      <Grid Grid.Column="1" Margin="30">
+        <!-- If Connection Selected: Quick Connect Card -->
+        <Border Background="#171B22"
+                BorderBrush="#262D38"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="32"
+                MaxWidth="560"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Center"
+                IsVisible="{Binding SelectedConnection, Converter={x:Static ObjectConverters.IsNotNull}}">
+          <StackPanel Spacing="20">
+            <StackPanel Orientation="Horizontal" Spacing="12">
+              <Path Width="32" Height="32" Stretch="Uniform" Fill="#10B981" Data="{StaticResource IconDatabase}" />
+              <StackPanel>
+                <TextBlock Text="{Binding SelectedConnection.Name}" FontSize="20" FontWeight="Bold" Foreground="#F1F5F9" />
+                <TextBlock Text="{Binding SelectedConnection.DriverBadge}" FontSize="12" Foreground="#10B981" FontWeight="SemiBold" />
+              </StackPanel>
+            </StackPanel>
+
+            <Border Background="#0F1216" BorderBrush="#262D38" BorderThickness="1" CornerRadius="6" Padding="14">
+              <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="Auto,*">
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="Host:" Foreground="#94A3B8" FontSize="12" Margin="0,0,16,6" />
+                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedConnection.Host}" Foreground="#F1F5F9" FontSize="12" />
+
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="Database:" Foreground="#94A3B8" FontSize="12" Margin="0,0,16,6" />
+                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedConnection.Database}" Foreground="#F1F5F9" FontSize="12" />
+
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="User:" Foreground="#94A3B8" FontSize="12" />
+                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedConnection.Username}" Foreground="#F1F5F9" FontSize="12" />
+              </Grid>
+            </Border>
+
+            <Grid ColumnDefinitions="*,Auto,Auto">
+              <Button Grid.Column="0"
+                      Content="🚀 Connect"
+                      Command="{Binding ConnectCommand}"
+                      CommandParameter="{Binding SelectedConnection}"
+                      Background="#10B981"
+                      Foreground="#0F1216"
+                      FontWeight="Bold"
+                      FontSize="14"
+                      Padding="24,10"
+                      CornerRadius="6"
+                      HorizontalAlignment="Stretch"
+                      HorizontalContentAlignment="Center"
+                      Margin="0,0,10,0" />
+
+              <Button Grid.Column="1"
+                      Content="✏️ Edit"
+                      Command="{Binding EditConnectionCommand}"
+                      CommandParameter="{Binding SelectedConnection}"
+                      Background="#262D38"
+                      Foreground="#F1F5F9"
+                      Padding="16,10"
+                      CornerRadius="6"
+                      Margin="0,0,10,0" />
+
+              <Button Grid.Column="2"
+                      Content="🗑️ Delete"
+                      Command="{Binding DeleteConnectionCommand}"
+                      CommandParameter="{Binding SelectedConnection}"
+                      Background="Transparent"
+                      BorderBrush="#EF4444"
+                      BorderThickness="1"
+                      Foreground="#EF4444"
+                      Padding="14,10"
+                      CornerRadius="6" />
+            </Grid>
+          </StackPanel>
+        </Border>
+
+        <!-- If No Connection Selected: Welcome Graphic -->
+        <StackPanel VerticalAlignment="Center"
+                    HorizontalAlignment="Center"
+                    Spacing="16"
+                    MaxWidth="460"
+                    IsVisible="{Binding SelectedConnection, Converter={x:Static ObjectConverters.IsNull}}">
+          <Image Source="/Assets/hornet.png"
+                 Width="80" Height="80"
+                 HorizontalAlignment="Center" />
+
+          <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
+            <TextBlock Text="Welcome to HornetStudio"
+                       FontSize="22"
+                       FontWeight="Bold"
+                       Foreground="#F1F5F9" />
+            <Border Background="#1E293B" CornerRadius="4" Padding="6,2" VerticalAlignment="Center">
+              <TextBlock Text="{Binding AppVersionText}"
+                         FontSize="11"
+                         FontWeight="SemiBold"
+                         Foreground="#10B981" />
+            </Border>
+          </StackPanel>
+
+          <TextBlock Text="Select a saved connection or create a new one to begin."
+                     FontSize="13"
+                     Foreground="#94A3B8"
+                     TextWrapping="Wrap"
+                     TextAlignment="Center" />
+
+          <Button Content="Create New Connection"
+                  Command="{Binding NewConnectionCommand}"
+                  Background="#10B981"
+                  Foreground="#0F1216"
+                  FontWeight="Bold"
+                  Padding="20,10"
+                  CornerRadius="6"
+                  HorizontalAlignment="Center" />
+        </StackPanel>
+      </Grid>
+    </Grid>
+
+    <!-- Embedded Form (When creating or editing) -->
+    <ContentControl Content="{Binding CurrentForm}" IsVisible="{Binding IsEditing}" />
+
+    <!-- Master Password Setup Modal Dialog -->
+    <Border Background="#BF000000"
+            IsVisible="{Binding IsMasterPasswordPromptOpen}">
+      <Border Background="#171B22"
+              BorderBrush="#262D38"
+              BorderThickness="1"
+              CornerRadius="8"
+              Padding="24"
+              Width="420"
+              VerticalAlignment="Center"
+              HorizontalAlignment="Center">
+        <StackPanel Spacing="14">
+          <TextBlock Text="Set Master Password (KeePass-style)"
+                     FontSize="16"
+                     FontWeight="Bold"
+                     Foreground="#F1F5F9" />
+
+          <TextBlock Text="Protects your database passwords with PBKDF2 (100,000 iterations) + AES-256-GCM. Enter a master password to encrypt your vault:"
+                     FontSize="12"
+                     Foreground="#94A3B8"
+                     TextWrapping="Wrap" />
+
+          <TextBox Text="{Binding NewMasterPassword}"
+                   PasswordChar="•"
+                   PlaceholderText="Enter master password..."
+                   Background="#0F1216"
+                   BorderBrush="#262D38"
+                   Foreground="#F1F5F9" />
+
+          <Grid ColumnDefinitions="*,*">
+            <Button Grid.Column="0"
+                    Content="Cancel"
+                    Command="{Binding ToggleMasterPasswordDialogCommand}"
+                    Background="Transparent"
+                    BorderBrush="#262D38"
+                    BorderThickness="1"
+                    Foreground="#94A3B8"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    Padding="10,8"
+                    CornerRadius="4"
+                    Margin="0,0,6,0" />
+
+            <Button Grid.Column="1"
+                    Content="Save Password"
+                    Command="{Binding SaveMasterPasswordCommand}"
+                    Background="#10B981"
+                    Foreground="#0F1216"
+                    FontWeight="Bold"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    Padding="10,8"
+                    CornerRadius="4"
+                    Margin="6,0,0,0" />
+          </Grid>
+        </StackPanel>
+      </Border>
+    </Border>
+  </Grid>
+</UserControl>

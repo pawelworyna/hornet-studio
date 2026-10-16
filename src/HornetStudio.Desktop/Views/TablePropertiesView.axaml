@@ -1,0 +1,93 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:HornetStudio.Desktop.ViewModels.Tabs"
+             xmlns:models="using:HornetStudio.Core.Domain.Models"
+             x:Class="HornetStudio.Desktop.Views.TablePropertiesView"
+             x:DataType="vm:TablePropertiesViewModel">
+
+  <TabControl Background="#0F1216" Margin="10">
+    <!-- Columns Tab -->
+    <TabItem Header="Columns">
+      <DataGrid ItemsSource="{Binding Columns}"
+                AutoGenerateColumns="False"
+                IsReadOnly="True"
+                GridLinesVisibility="All"
+                CanUserResizeColumns="True"
+                Background="#111419">
+        <DataGrid.Columns>
+          <DataGridTextColumn Header="Column Name" Binding="{Binding ColumnName}" Width="*" />
+          <DataGridTextColumn Header="Data Type" Binding="{Binding DataType}" Width="*" />
+          <DataGridCheckBoxColumn Header="PK" Binding="{Binding IsPrimaryKey}" Width="60" />
+          <DataGridCheckBoxColumn Header="Nullable" Binding="{Binding Nullable}" Width="80" />
+          <DataGridTextColumn Header="Default Value" Binding="{Binding DefaultValue}" Width="*" />
+          <DataGridTextColumn Header="Extra / Identity" Binding="{Binding Extra}" Width="*" />
+        </DataGrid.Columns>
+      </DataGrid>
+    </TabItem>
+
+    <!-- Indexes Tab -->
+    <TabItem Header="Indexes">
+      <DataGrid ItemsSource="{Binding Indexes}"
+                AutoGenerateColumns="False"
+                IsReadOnly="True"
+                GridLinesVisibility="All"
+                CanUserResizeColumns="True"
+                Background="#111419">
+        <DataGrid.Columns>
+          <DataGridTextColumn Header="Index Name" Binding="{Binding Name}" Width="*" />
+          <DataGridCheckBoxColumn Header="Unique" Binding="{Binding IsUnique}" Width="80" />
+          <DataGridCheckBoxColumn Header="Primary Key" Binding="{Binding IsPrimaryKey}" Width="100" />
+          <DataGridTextColumn Header="Type" Binding="{Binding IndexType}" Width="100" />
+        </DataGrid.Columns>
+      </DataGrid>
+    </TabItem>
+
+    <!-- Foreign Keys Tab -->
+    <TabItem Header="Foreign Keys">
+      <DataGrid ItemsSource="{Binding Keys}"
+                AutoGenerateColumns="False"
+                IsReadOnly="True"
+                GridLinesVisibility="All"
+                CanUserResizeColumns="True"
+                Background="#111419">
+        <DataGrid.Columns>
+          <DataGridTextColumn Header="Constraint Name" Binding="{Binding ConstraintName}" Width="*" />
+          <DataGridTextColumn Header="Column" Binding="{Binding ColumnName}" Width="*" />
+          <DataGridTextColumn Header="Referenced Table" Binding="{Binding ReferencedTable}" Width="*" />
+          <DataGridTextColumn Header="Referenced Column" Binding="{Binding ReferencedColumn}" Width="*" />
+          <DataGridTextColumn Header="On Update" Binding="{Binding OnUpdate}" Width="100" />
+          <DataGridTextColumn Header="On Delete" Binding="{Binding OnDelete}" Width="100" />
+        </DataGrid.Columns>
+      </DataGrid>
+    </TabItem>
+
+    <!-- Triggers Tab -->
+    <TabItem Header="Triggers">
+      <DataGrid ItemsSource="{Binding Triggers}"
+                AutoGenerateColumns="False"
+                IsReadOnly="True"
+                GridLinesVisibility="All"
+                CanUserResizeColumns="True"
+                Background="#111419">
+        <DataGrid.Columns>
+          <DataGridTextColumn Header="Trigger Name" Binding="{Binding Name}" Width="*" />
+          <DataGridTextColumn Header="Timing" Binding="{Binding Timing}" Width="120" />
+          <DataGridTextColumn Header="Event" Binding="{Binding Event}" Width="120" />
+          <DataGridTextColumn Header="Definition" Binding="{Binding Definition}" Width="2*" />
+        </DataGrid.Columns>
+      </DataGrid>
+    </TabItem>
+
+    <!-- DDL Script Tab -->
+    <TabItem Header="DDL / SQL Script">
+      <TextBox Text="{Binding DdlScript}"
+               IsReadOnly="True"
+               FontFamily="Consolas, monospace"
+               FontSize="13"
+               Background="#0F1216"
+               Foreground="#34D399"
+               BorderThickness="0"
+               Padding="14" />
+    </TabItem>
+  </TabControl>
+</UserControl>

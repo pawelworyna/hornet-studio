@@ -1,0 +1,70 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:HornetStudio.Desktop.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
+        x:Class="HornetStudio.Desktop.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Title="{Binding AppTitle}"
+        Icon="/Assets/hornet.ico"
+        Background="#0F1216"
+        Foreground="#F1F5F9"
+        MinWidth="900" MinHeight="600"
+        WindowStartupLocation="CenterScreen">
+
+  <Grid RowDefinitions="Auto,*,Auto">
+    <!-- Top Header Bar with Green Hornet Logo -->
+    <Border Grid.Row="0"
+            Background="#13171D"
+            BorderBrush="#262D38"
+            BorderThickness="0,0,0,1"
+            Padding="14,10">
+      <Grid ColumnDefinitions="Auto,*,Auto">
+        <!-- Logo + Title -->
+        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+          <!-- Green Hornet Emblem Icon -->
+          <Image Source="/Assets/hornet.png"
+                 Width="26" Height="26"
+                 VerticalAlignment="Center" />
+          <TextBlock Text="HORNET"
+                     FontSize="17"
+                     FontWeight="Black"
+                     LetterSpacing="1"
+                     Foreground="#10B981"
+                     VerticalAlignment="Center" />
+          <TextBlock Text="STUDIO"
+                     FontSize="17"
+                     FontWeight="Bold"
+                     LetterSpacing="1"
+                     Foreground="#F1F5F9"
+                     VerticalAlignment="Center" />
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <!-- Main Dynamic Content Host -->
+    <ContentControl Grid.Row="1" Content="{Binding CurrentPage}" />
+
+    <!-- Bottom Status Bar -->
+    <Border Grid.Row="2"
+            Background="#111419"
+            BorderBrush="#262D38"
+            BorderThickness="0,1,0,0"
+            Padding="12,5">
+      <Grid ColumnDefinitions="*,Auto">
+        <TextBlock Grid.Column="0"
+                   Text="{Binding StatusText}"
+                   FontSize="11"
+                   Foreground="#94A3B8"
+                   VerticalAlignment="Center" />
+
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+          <TextBlock Text="{Binding VersionDisplay}"
+                     FontSize="11"
+                     Foreground="#64748B" />
+        </StackPanel>
+      </Grid>
+    </Border>
+  </Grid>
+</Window>

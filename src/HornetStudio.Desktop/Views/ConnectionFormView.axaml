@@ -1,0 +1,374 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:HornetStudio.Desktop.ViewModels"
+             x:Class="HornetStudio.Desktop.Views.ConnectionFormView"
+             x:DataType="vm:ConnectionFormViewModel">
+
+  <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <Border Background="#171B22"
+            BorderBrush="#262D38"
+            BorderThickness="1"
+            CornerRadius="8"
+            Padding="24"
+            Margin="20"
+            MaxWidth="680"
+            HorizontalAlignment="Center">
+      <StackPanel Spacing="16">
+        <!-- Form Header -->
+        <TextBlock Text="Connection Configuration"
+                   FontSize="18"
+                   FontWeight="Bold"
+                   Foreground="#F1F5F9" />
+
+        <!-- Connection Type Selector with Full Engine Support -->
+        <StackPanel Spacing="6">
+          <TextBlock Text="Database Type" FontSize="12" Foreground="#94A3B8" />
+          <ComboBox ItemsSource="{Binding AvailableDatabaseTypes}"
+                    SelectedItem="{Binding ConnectionType, Mode=TwoWay}"
+                    HorizontalAlignment="Stretch"
+                    Background="#0F1216"
+                    BorderBrush="#262D38"
+                    Foreground="#F1F5F9"
+                    Height="36" />
+        </StackPanel>
+
+        <!-- Connection Name -->
+        <StackPanel Spacing="6">
+          <TextBlock Text="Connection Name" FontSize="12" Foreground="#94A3B8" />
+          <TextBox Text="{Binding Name}"
+                   Background="#0F1216"
+                   BorderBrush="#262D38"
+                   Foreground="#F1F5F9" />
+        </StackPanel>
+
+        <!-- ============================================== -->
+        <!-- 1. LOCAL FILE-BASED DATABASE PANEL             -->
+        <!-- ============================================== -->
+        <Border Background="#0F1216"
+                BorderBrush="#10B981"
+                BorderThickness="1"
+                CornerRadius="6"
+                Padding="16"
+                IsVisible="{Binding IsFileDatabase}">
+          <StackPanel Spacing="12">
+            <TextBlock Text="{Binding FileDatabaseHeader}"
+                       FontSize="13"
+                       FontWeight="Bold"
+                       Foreground="#10B981" />
+
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBox Grid.Column="0"
+                       Text="{Binding Host}"
+                       PlaceholderText="Path to database file (.db, .sqlite, .duckdb)..."
+                       Background="#171B22"
+                       BorderBrush="#262D38"
+                       Foreground="#F1F5F9"
+                       Margin="0,0,8,0" />
+
+              <Button Grid.Column="1"
+                      Content="📁 Choose File..."
+                      Click="OnBrowseSqliteFileClicked"
+                      Background="#10B981"
+                      Foreground="#0F1216"
+                      FontWeight="Bold"
+                      Padding="14,8"
+                      CornerRadius="4" />
+            </Grid>
+
+            <Grid ColumnDefinitions="Auto,Auto,*">
+              <Button Grid.Column="0"
+                      Content="✨ Create New Database File"
+                      Click="OnCreateSqliteFileClicked"
+                      Background="#1A2029"
+                      BorderBrush="#262D38"
+                      BorderThickness="1"
+                      Foreground="#94A3B8"
+                      FontSize="11"
+                      Padding="10,6"
+                      CornerRadius="4"
+                      Margin="0,0,8,0" />
+
+              <Button Grid.Column="1"
+                      Content="🧠 Use In-Memory (:memory:)"
+                      Click="OnInMemorySqliteClicked"
+                      Background="#1A2029"
+                      BorderBrush="#262D38"
+                      BorderThickness="1"
+                      Foreground="#94A3B8"
+                      FontSize="11"
+                      Padding="10,6"
+                      CornerRadius="4" />
+            </Grid>
+
+            <TextBlock Text="Local single-file or in-memory databases. No port, user, or network password required."
+                       FontSize="11"
+                       Foreground="#64748B"
+                       TextWrapping="Wrap" />
+          </StackPanel>
+        </Border>
+
+        <!-- ============================================== -->
+        <!-- 2. COMMON SERVER INPUTS                        -->
+        <!-- ============================================== -->
+        <StackPanel Spacing="16" IsVisible="{Binding IsNetworkDatabase}">
+          <!-- Host and Port -->
+          <Grid ColumnDefinitions="3*,*">
+            <StackPanel Grid.Column="0" Spacing="6" Margin="0,0,10,0">
+              <TextBlock Text="Host" FontSize="12" Foreground="#94A3B8" />
+              <TextBox Text="{Binding Host}"
+                       PlaceholderText="localhost or IP address"
+                       Background="#0F1216"
+                       BorderBrush="#262D38"
+                       Foreground="#F1F5F9" />
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Spacing="6">
+              <TextBlock Text="Port" FontSize="12" Foreground="#94A3B8" />
+              <TextBox Text="{Binding Port}"
+                       Background="#0F1216"
+                       BorderBrush="#262D38"
+                       Foreground="#F1F5F9" />
+            </StackPanel>
+          </Grid>
+
+          <!-- Database Name / Service Name -->
+          <StackPanel Spacing="6">
+            <TextBlock Text="{Binding DatabaseFieldLabel}" FontSize="12" Foreground="#94A3B8" />
+            <TextBox Text="{Binding Database}"
+                     Background="#0F1216"
+                     BorderBrush="#262D38"
+                     Foreground="#F1F5F9" />
+          </StackPanel>
+
+          <!-- SQL Server: Windows Authentication Option -->
+          <Border Background="#13171D" BorderBrush="#262D38" BorderThickness="1" CornerRadius="6" Padding="12"
+                  IsVisible="{Binding IsSqlServer}">
+            <StackPanel Spacing="8">
+              <CheckBox Content="Use Windows Integrated Authentication (Current OS Login)"
+                        IsChecked="{Binding UseWindowsAuth}"
+                        Foreground="#CBD5E1" />
+              <TextBlock Text="When enabled, your Windows credentials will be used automatically. No username or password required."
+                         FontSize="11" Foreground="#64748B" IsVisible="{Binding UseWindowsAuth}" />
+            </StackPanel>
+          </Border>
+
+          <!-- Username & Password (hidden when Windows Auth is active) -->
+          <Grid ColumnDefinitions="*,*" IsVisible="{Binding !UseWindowsAuth}">
+            <StackPanel Grid.Column="0" Spacing="6" Margin="0,0,10,0">
+              <TextBlock Text="User" FontSize="12" Foreground="#94A3B8" />
+              <TextBox Text="{Binding Username}"
+                       Background="#0F1216"
+                       BorderBrush="#262D38"
+                       Foreground="#F1F5F9" />
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Spacing="6">
+              <TextBlock Text="Password" FontSize="12" Foreground="#94A3B8" />
+              <TextBox Text="{Binding Password}"
+                       PasswordChar="•"
+                       Background="#0F1216"
+                       BorderBrush="#262D38"
+                       Foreground="#F1F5F9" />
+            </StackPanel>
+          </Grid>
+
+          <!-- ============================================== -->
+          <!-- DEDICATED OPTIONS PER DRIVER                   -->
+          <!-- ============================================== -->
+
+          <!-- PostgreSQL / CockroachDB / Redshift Options -->
+          <Border Background="#13171D" BorderBrush="#262D38" BorderThickness="1" CornerRadius="6" Padding="12"
+                  IsVisible="{Binding IsPostgres}">
+            <StackPanel Spacing="8">
+              <TextBlock Text="PostgreSQL / Compatible Engine Options" FontSize="12" FontWeight="Bold" Foreground="#34D399" />
+              <CheckBox Content="Enable SSL / TLS" IsChecked="{Binding Ssl}" Foreground="#CBD5E1" />
+            </StackPanel>
+          </Border>
+
+          <!-- MySQL / MariaDB Options -->
+          <Border Background="#13171D" BorderBrush="#262D38" BorderThickness="1" CornerRadius="6" Padding="12"
+                  IsVisible="{Binding IsMySqlOrMariaDb}">
+            <StackPanel Spacing="8">
+              <TextBlock Text="MySQL / MariaDB Options" FontSize="12" FontWeight="Bold" Foreground="#34D399" />
+              <CheckBox Content="Allow Public Key Retrieval (MySQL 8+)" IsChecked="{Binding AllowPublicKeyRetrieval}" Foreground="#CBD5E1" />
+              <CheckBox Content="Enable SSL / TLS" IsChecked="{Binding Ssl}" Foreground="#CBD5E1" />
+            </StackPanel>
+          </Border>
+
+          <!-- SQL Server Options -->
+          <Border Background="#13171D" BorderBrush="#262D38" BorderThickness="1" CornerRadius="6" Padding="12"
+                  IsVisible="{Binding IsSqlServer}">
+            <StackPanel Spacing="8">
+              <TextBlock Text="SQL Server Options" FontSize="12" FontWeight="Bold" Foreground="#34D399" />
+              <CheckBox Content="Trust Server Certificate (Recommended for local dev &amp; self-signed certs)"
+                        IsChecked="{Binding TrustServerCertificate}" Foreground="#CBD5E1" />
+              <CheckBox Content="Encrypt Connection" IsChecked="{Binding Ssl}" Foreground="#CBD5E1" />
+            </StackPanel>
+          </Border>
+
+          <!-- Oracle Options -->
+          <Border Background="#13171D" BorderBrush="#262D38" BorderThickness="1" CornerRadius="6" Padding="12"
+                  IsVisible="{Binding IsOracle}">
+            <StackPanel Spacing="8">
+              <TextBlock Text="Oracle Database Options" FontSize="12" FontWeight="Bold" Foreground="#34D399" />
+              <TextBlock Text="Connects via Oracle Managed Data Access (ODP.NET). Default port: 1521."
+                         FontSize="11" Foreground="#94A3B8" TextWrapping="Wrap" />
+            </StackPanel>
+          </Border>
+
+          <!-- ClickHouse Options -->
+          <Border Background="#13171D" BorderBrush="#262D38" BorderThickness="1" CornerRadius="6" Padding="12"
+                  IsVisible="{Binding IsClickHouse}">
+            <StackPanel Spacing="8">
+              <TextBlock Text="ClickHouse Options" FontSize="12" FontWeight="Bold" Foreground="#34D399" />
+              <TextBlock Text="Connects via ClickHouse ADO.NET client. Default port: 8123."
+                         FontSize="11" Foreground="#94A3B8" TextWrapping="Wrap" />
+              <CheckBox Content="Enable SSL / TLS" IsChecked="{Binding Ssl}" Foreground="#CBD5E1" />
+            </StackPanel>
+          </Border>
+
+          <!-- Supabase Options -->
+          <Border Background="#0C1F17" BorderBrush="#3ECF8E" BorderThickness="1" CornerRadius="6" Padding="12"
+                  IsVisible="{Binding IsSupabase}">
+            <StackPanel Spacing="6">
+              <TextBlock Text="⚡ Supabase Project Connection" FontSize="12" FontWeight="Bold" Foreground="#3ECF8E" />
+              <TextBlock Text="Direct connection (port 5432) or Transaction Pooler / PgBouncer (port 6543). Automatically connects with SSL and grants full access to public, auth, and storage schemas."
+                         FontSize="11" Foreground="#94A3B8" TextWrapping="Wrap" />
+            </StackPanel>
+          </Border>
+
+          <!-- Appwrite Options -->
+          <Border Background="#1C0F17" BorderBrush="#FD366E" BorderThickness="1" CornerRadius="6" Padding="12"
+                  IsVisible="{Binding IsAppwrite}">
+            <StackPanel Spacing="6">
+              <TextBlock Text="🚀 Appwrite Backend Connection" FontSize="12" FontWeight="Bold" Foreground="#FD366E" />
+              <TextBlock Text="Connects to the underlying Appwrite MariaDB/MySQL database instance (default port 3306, database: appwrite). Browse internal collections, documents, and user accounts directly."
+                         FontSize="11" Foreground="#94A3B8" TextWrapping="Wrap" />
+            </StackPanel>
+          </Border>
+
+          <!-- Firebase Options -->
+          <Border Background="#1C180B" BorderBrush="#FFCA28" BorderThickness="1" CornerRadius="6" Padding="12"
+                  IsVisible="{Binding IsFirebase}">
+            <StackPanel Spacing="6">
+              <TextBlock Text="🔥 Firebase Firestore / Emulator Connection" FontSize="12" FontWeight="Bold" Foreground="#FFCA28" />
+              <TextBlock Text="Connects to Firebase Firestore Local Emulator Suite (default port 8080) or Firebase Cloud REST endpoint. Allows inspecting document collections and executing queries."
+                         FontSize="11" Foreground="#94A3B8" TextWrapping="Wrap" />
+            </StackPanel>
+          </Border>
+
+          <!-- AWS Amplify Options -->
+          <Border Background="#1C140B" BorderBrush="#FF9900" BorderThickness="1" CornerRadius="6" Padding="12"
+                  IsVisible="{Binding IsAwsAmplify}">
+            <StackPanel Spacing="6">
+              <TextBlock Text="☁️ AWS Amplify DataStore / Aurora Connection" FontSize="12" FontWeight="Bold" Foreground="#FF9900" />
+              <TextBlock Text="Direct connection to AWS Amplify backend PostgreSQL / Aurora Serverless instance (port 5432) with SSL encryption. Grants full access to schemas and relations."
+                         FontSize="11" Foreground="#94A3B8" TextWrapping="Wrap" />
+            </StackPanel>
+          </Border>
+
+          <!-- MongoDB Options -->
+          <Border Background="#0B2014" BorderBrush="#00ED64" BorderThickness="1" CornerRadius="6" Padding="12"
+                  IsVisible="{Binding IsMongoDb}">
+            <StackPanel Spacing="6">
+              <TextBlock Text="🍃 MongoDB NoSQL Connection" FontSize="12" FontWeight="Bold" Foreground="#00ED64" />
+              <TextBlock Text="Connects via official MongoDB.Driver (port 27017). Collections are browsable in the DataGrid with document schema sampling. Supports MQL and JSON queries."
+                         FontSize="11" Foreground="#94A3B8" TextWrapping="Wrap" />
+            </StackPanel>
+          </Border>
+
+          <!-- IBM DB2 Options -->
+          <Border Background="#0B1A2E" BorderBrush="#0062FF" BorderThickness="1" CornerRadius="6" Padding="12"
+                  IsVisible="{Binding IsDb2}">
+            <StackPanel Spacing="6">
+              <TextBlock Text="🏢 IBM DB2 Enterprise Connection" FontSize="12" FontWeight="Bold" Foreground="#0062FF" />
+              <TextBlock Text="Connects to IBM DB2 LUW database (default port: 50000, database: SAMPLE). Supports system catalog introspection (SYSCAT.TABLES/COLUMNS), schema filtering, and standard DB2 SQL paging."
+                         FontSize="11" Foreground="#94A3B8" TextWrapping="Wrap" />
+            </StackPanel>
+          </Border>
+
+          <!-- SAP HANA Options -->
+          <Border Background="#091B26" BorderBrush="#008FD3" BorderThickness="1" CornerRadius="6" Padding="12"
+                  IsVisible="{Binding IsSapHana}">
+            <StackPanel Spacing="6">
+              <TextBlock Text="💎 SAP HANA In-Memory Database Connection" FontSize="12" FontWeight="Bold" Foreground="#008FD3" />
+              <TextBlock Text="Connects to SAP HANA database (default SQL port: 30015 for instance 00, or 3xx15). Supports column table metadata, system views (SYS.TABLES, SYS.TABLE_COLUMNS), and real-time execution."
+                         FontSize="11" Foreground="#94A3B8" TextWrapping="Wrap" />
+            </StackPanel>
+          </Border>
+
+          <!-- Firebird Options -->
+          <Border Background="#2A140E" BorderBrush="#E25822" BorderThickness="1" CornerRadius="6" Padding="12"
+                  IsVisible="{Binding IsFirebird}">
+            <StackPanel Spacing="6">
+              <TextBlock Text="🔥 Firebird SQL Database Connection" FontSize="12" FontWeight="Bold" Foreground="#E25822" />
+              <TextBlock Text="Connects to Firebird database server (default port: 3050, default user: SYSDBA) or local .fdb file. Supports ANSI SQL, RDB$ system catalog introspection, and FIRST/SKIP / ROWS pagination."
+                         FontSize="11" Foreground="#94A3B8" TextWrapping="Wrap" />
+            </StackPanel>
+          </Border>
+
+          <!-- SSH Tunnel Settings -->
+          <Expander Header="SSH Tunnel Settings (Bastion / Jump Host Supported)"
+                    Background="#13171D"
+                    BorderBrush="#262D38">
+            <StackPanel Spacing="10" Margin="0,10,0,0">
+              <CheckBox Content="Use SSH Tunnel" IsChecked="{Binding SshEnabled}" Foreground="#CBD5E1" />
+              <Grid ColumnDefinitions="3*,*" IsVisible="{Binding SshEnabled}">
+                <TextBox Grid.Column="0" Text="{Binding SshHost}" PlaceholderText="SSH Host" Margin="0,0,10,0" />
+                <TextBox Grid.Column="1" Text="{Binding SshPort}" PlaceholderText="SSH Port (22)" />
+              </Grid>
+              <Grid ColumnDefinitions="*,*" IsVisible="{Binding SshEnabled}">
+                <TextBox Grid.Column="0" Text="{Binding SshUser}" PlaceholderText="SSH Username" Margin="0,0,10,0" />
+                <TextBox Grid.Column="1" Text="{Binding SshPassword}" PasswordChar="•" PlaceholderText="SSH Password" />
+              </Grid>
+              <TextBox Text="{Binding SshKeyPath}" PlaceholderText="Private Key Path (optional)" IsVisible="{Binding SshEnabled}" />
+            </StackPanel>
+          </Expander>
+        </StackPanel>
+
+        <!-- Test Result Banner -->
+        <Border Background="#10B98115"
+                BorderBrush="#10B981"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="10"
+                IsVisible="{Binding TestResult, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+          <TextBlock Text="{Binding TestResult}"
+                     FontSize="12"
+                     Foreground="#34D399"
+                     TextWrapping="Wrap" />
+        </Border>
+
+        <!-- Actions Bar -->
+        <Grid ColumnDefinitions="Auto,*,Auto,Auto" Margin="0,10,0,0">
+          <Button Grid.Column="0"
+                  Content="Test Connection"
+                  Command="{Binding TestConnectionCommand}"
+                  Background="#262D38"
+                  Foreground="#F1F5F9"
+                  Padding="16,8"
+                  CornerRadius="4" />
+
+          <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10">
+            <Button Content="Cancel"
+                    Command="{Binding CancelCommand}"
+                    Background="Transparent"
+                    BorderBrush="#262D38"
+                    BorderThickness="1"
+                    Foreground="#94A3B8"
+                    Padding="16,8"
+                    CornerRadius="4" />
+
+            <Button Content="Save Connection"
+                    Command="{Binding SaveCommand}"
+                    Background="#10B981"
+                    Foreground="#0F1216"
+                    FontWeight="Bold"
+                    Padding="20,8"
+                    CornerRadius="4" />
+          </StackPanel>
+        </Grid>
+      </StackPanel>
+    </Border>
+  </ScrollViewer>
+</UserControl>

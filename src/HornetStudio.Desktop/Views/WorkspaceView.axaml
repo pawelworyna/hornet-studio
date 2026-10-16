@@ -1,0 +1,151 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:HornetStudio.Desktop.ViewModels"
+             xmlns:views="using:HornetStudio.Desktop.Views"
+             xmlns:tabs="using:HornetStudio.Desktop.ViewModels.Tabs"
+             x:Class="HornetStudio.Desktop.Views.WorkspaceView"
+             x:DataType="vm:WorkspaceViewModel">
+
+  <UserControl.KeyBindings>
+    <KeyBinding Gesture="Ctrl+K" Command="{Binding OpenQuickSearchCommand}" />
+    <KeyBinding Gesture="Ctrl+P" Command="{Binding OpenQuickSearchCommand}" />
+  </UserControl.KeyBindings>
+
+  <Grid>
+    <Grid ColumnDefinitions="280,Auto,*">
+    <!-- Left: Object Sidebar -->
+    <ContentControl Grid.Column="0" Content="{Binding Sidebar}" />
+
+    <!-- Splitter -->
+    <GridSplitter Grid.Column="1" Width="3" Background="#262D38" ResizeDirection="Columns" />
+
+    <!-- Right: Tab Bar & Tab Content -->
+    <Grid Grid.Column="2" RowDefinitions="Auto,*">
+      <!-- Tabs Header & Workspace Toolbar -->
+      <Border Grid.Row="0"
+              Background="#13171D"
+              BorderBrush="#262D38"
+              BorderThickness="0,0,0,1"
+              Padding="6,4">
+        <Grid ColumnDefinitions="*,Auto">
+          <!-- Horizontal Tabs List -->
+          <ScrollViewer Grid.Column="0" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+            <ItemsControl ItemsSource="{Binding Tabs.Tabs}">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <StackPanel Orientation="Horizontal" Spacing="4" />
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="tabs:TabItemViewModelBase">
+                  <Button Background="#171B22"
+                          BorderBrush="#262D38"
+                          BorderThickness="1"
+                          CornerRadius="4"
+                          Padding="10,6"
+                          Command="{Binding $parent[UserControl].((vm:WorkspaceViewModel)DataContext).Tabs.SelectTabCommand}"
+                          CommandParameter="{Binding}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                      <TextBlock Text="{Binding Title}" FontSize="12" Foreground="#F1F5F9" VerticalAlignment="Center" />
+                      <Button Command="{Binding $parent[UserControl].((vm:WorkspaceViewModel)DataContext).Tabs.CloseTabCommand}"
+                              CommandParameter="{Binding}"
+                              Background="Transparent"
+                              Padding="2"
+                              Margin="2,0,0,0"
+                              ToolTip.Tip="Close Tab">
+                        <Path Width="8" Height="8" Stretch="Uniform" Fill="#94A3B8" Data="{StaticResource IconCancel}" />
+                      </Button>
+                    </StackPanel>
+                  </Button>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+
+          <!-- Workspace Actions -->
+          <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" Margin="8,0,0,0">
+            <Button Content="🔍 Quick Search"
+                    Command="{Binding OpenQuickSearchCommand}"
+                    Background="#1A2029"
+                    BorderBrush="#38BDF8"
+                    BorderThickness="1"
+                    Foreground="#38BDF8"
+                    FontWeight="SemiBold"
+                    FontSize="11"
+                    Padding="10,6"
+                    CornerRadius="4"
+                    ToolTip.Tip="Quick Search tables, views, queries (Ctrl+K or Ctrl+P)" />
+
+            <Button Content="➕ Query"
+                    Command="{Binding OpenNewQueryTabCommand}"
+                    Background="#10B981"
+                    Foreground="#0F1216"
+                    FontWeight="Bold"
+                    FontSize="11"
+                    Padding="10,6"
+                    CornerRadius="4" />
+
+            <Button Content="➕ Table"
+                    Command="{Binding OpenTableBuilderTabCommand}"
+                    Background="#1A2029"
+                    BorderBrush="#10B981"
+                    BorderThickness="1"
+                    Foreground="#34D399"
+                    FontWeight="SemiBold"
+                    FontSize="11"
+                    Padding="10,6"
+                    CornerRadius="4"
+                    ToolTip.Tip="Create New Table (Visual Builder)" />
+
+            <Button Content="📦 Export DB"
+                    Command="{Binding OpenBackupRestoreTabCommand}"
+                    Background="#1A2029"
+                    BorderBrush="#262D38"
+                    BorderThickness="1"
+                    Foreground="#94A3B8"
+                    FontSize="11"
+                    Padding="10,6"
+                    CornerRadius="4"
+                    ToolTip.Tip="Export / Dump Entire Database &amp; Backup" />
+
+            <Button Content="📥 Import Data"
+                    Command="{Binding OpenDataImportTabCommand}"
+                    Background="#1A2029"
+                    BorderBrush="#262D38"
+                    BorderThickness="1"
+                    Foreground="#94A3B8"
+                    FontSize="11"
+                    Padding="10,6"
+                    CornerRadius="4"
+                    ToolTip.Tip="Import Data from CSV / JSON" />
+
+            <Button Content="⚡ Disconnect"
+                    Command="{Binding DisconnectCommand}"
+                    Background="Transparent"
+                    BorderBrush="#EF4444"
+                    BorderThickness="1"
+                    Foreground="#EF4444"
+                    FontSize="11"
+                    Padding="10,6"
+                    CornerRadius="4" />
+          </StackPanel>
+        </Grid>
+      </Border>
+
+      <!-- Active Tab Content -->
+      <ContentControl Grid.Row="1" Content="{Binding Tabs.SelectedTab}" />
+    </Grid>
+  </Grid>
+
+  <!-- Quick Search Omnibox Overlay -->
+  <Grid Background="#7F000000"
+        IsVisible="{Binding IsQuickSearchOpen}"
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Stretch">
+    <views:QuickSearchView DataContext="{Binding QuickSearch}"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Top"
+                           Margin="0,60,0,0" />
+  </Grid>
+</Grid>
+</UserControl>

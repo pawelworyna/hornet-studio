@@ -1,0 +1,519 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:HornetStudio.Desktop.ViewModels.Tabs"
+             xmlns:views="using:HornetStudio.Desktop.Views"
+             xmlns:coreVm="using:HornetStudio.Desktop.ViewModels"
+             x:Class="HornetStudio.Desktop.Views.TableDataView"
+             x:DataType="vm:TableDataViewModel">
+
+  <Grid RowDefinitions="Auto,Auto,Auto,*,Auto">
+    <!-- Row 0: Top Action Toolbar -->
+    <Border Grid.Row="0"
+            Background="#171B22"
+            BorderBrush="#262D38"
+            BorderThickness="0,0,0,1"
+            Padding="8,6">
+      <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*,Auto">
+        <!-- Staged Changes Buttons -->
+        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" Margin="0,0,12,0">
+          <Button Command="{Binding ApplyChangesCommand}"
+                  IsEnabled="{Binding HasStagedChanges}"
+                  Background="#10B981"
+                  Foreground="#0F1216"
+                  FontWeight="Bold"
+                  FontSize="12"
+                  Padding="12,6"
+                  CornerRadius="4">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <Path Width="10" Height="10" Stretch="Uniform" Fill="#0F1216" Data="{StaticResource IconSave}" VerticalAlignment="Center" />
+              <TextBlock Text="Apply Changes" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+
+          <Button Content="Discard"
+                  Command="{Binding DiscardChangesCommand}"
+                  IsEnabled="{Binding HasStagedChanges}"
+                  Background="#262D38"
+                  Foreground="#94A3B8"
+                  FontSize="12"
+                  Padding="10,6"
+                  CornerRadius="4" />
+
+          <Button Content="View SQL Diff"
+                  Command="{Binding GenerateSqlPreviewCommand}"
+                  IsEnabled="{Binding HasStagedChanges}"
+                  Background="#1A2029"
+                  BorderBrush="#262D38"
+                  BorderThickness="1"
+                  Foreground="#34D399"
+                  FontSize="11"
+                  Padding="8,6"
+                  CornerRadius="4" />
+        </StackPanel>
+
+        <!-- Staged Changes Badge -->
+        <Border Grid.Column="1"
+                Background="#F59E0B22"
+                BorderBrush="#F59E0B"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="8,4"
+                VerticalAlignment="Center"
+                IsVisible="{Binding HasStagedChanges}"
+                Margin="0,0,12,0">
+          <TextBlock Text="{Binding StagedChangesSummary}"
+                     FontSize="11"
+                     FontWeight="SemiBold"
+                     Foreground="#FBBF24" />
+        </Border>
+
+        <!-- Row Manipulation -->
+        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" Margin="0,0,12,0">
+          <Button Command="{Binding AddNewRowCommand}"
+                  Background="#1A2029"
+                  BorderBrush="#262D38"
+                  BorderThickness="1"
+                  Foreground="#F1F5F9"
+                  FontSize="11"
+                  Padding="8,6"
+                  CornerRadius="4"
+                  ToolTip.Tip="Add New Row">
+            <StackPanel Orientation="Horizontal" Spacing="4">
+              <Path Width="10" Height="10" Stretch="Uniform" Fill="#10B981" Data="{StaticResource IconAdd}" VerticalAlignment="Center" />
+              <TextBlock Text="Add Row" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+
+          <Button Command="{Binding DeleteSelectedRowCommand}"
+                  Background="#1A2029"
+                  BorderBrush="#262D38"
+                  BorderThickness="1"
+                  Foreground="#EF4444"
+                  FontSize="11"
+                  Padding="8,6"
+                  CornerRadius="4"
+                  ToolTip.Tip="Delete / Undelete Selected Row">
+            <TextBlock Text="Delete Row" VerticalAlignment="Center" />
+          </Button>
+
+          <Button Command="{Binding LoadDataCommand}"
+                  Background="#1A2029"
+                  BorderBrush="#262D38"
+                  BorderThickness="1"
+                  Foreground="#94A3B8"
+                  FontSize="11"
+                  Padding="8,6"
+                  CornerRadius="4"
+                  ToolTip.Tip="Refresh Data">
+            <Path Width="10" Height="10" Stretch="Uniform" Fill="#94A3B8" Data="{StaticResource IconRefresh}" VerticalAlignment="Center" />
+          </Button>
+        </StackPanel>
+
+        <!-- Filter Toggle Button & Filter Badge -->
+        <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="6" Margin="0,0,12,0">
+          <Button Command="{Binding ToggleFilterBarCommand}"
+                  Background="#1A2029"
+                  BorderBrush="{Binding HasActiveFilter, Converter={x:Static ObjectConverters.IsNotNull}, ConverterParameter=#10B981, FallbackValue=#262D38}"
+                  BorderThickness="1"
+                  Foreground="#F1F5F9"
+                  FontSize="11"
+                  Padding="10,6"
+                  CornerRadius="4"
+                  ToolTip.Tip="Toggle Table Filter Bar">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <Path Width="10" Height="10" Stretch="Uniform" Fill="#34D399" Data="{StaticResource IconFilter}" VerticalAlignment="Center" />
+              <TextBlock Text="Filter" VerticalAlignment="Center" FontWeight="SemiBold" />
+              <Border Background="#10B981" CornerRadius="3" Padding="4,1" Margin="2,0,0,0" IsVisible="{Binding HasActiveFilter}">
+                <TextBlock Text="ACTIVE" FontSize="9" FontWeight="Bold" Foreground="#0F1216" />
+              </Border>
+            </StackPanel>
+          </Button>
+        </StackPanel>
+
+        <!-- Export Dropdown Button -->
+        <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="6" Margin="0,0,12,0">
+          <Button Background="#1A2029"
+                  BorderBrush="#262D38"
+                  BorderThickness="1"
+                  Foreground="#F1F5F9"
+                  FontSize="11"
+                  Padding="10,6"
+                  CornerRadius="4"
+                  ToolTip.Tip="Export table data (CSV, JSON, SQL)">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <Path Width="10" Height="10" Stretch="Uniform" Fill="#34D399" Data="{StaticResource IconExport}" VerticalAlignment="Center" />
+              <TextBlock Text="Export" VerticalAlignment="Center" FontWeight="SemiBold" />
+              <TextBlock Text="▾" FontSize="9" Foreground="#94A3B8" VerticalAlignment="Center" />
+            </StackPanel>
+            <Button.Flyout>
+              <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                <MenuItem Header="📄 Export to CSV (.csv)" Click="OnExportCsvClicked" />
+                <MenuItem Header="🌐 Export to JSON (.json)" Click="OnExportJsonClicked" />
+                <MenuItem Header="💾 Export to SQL Inserts (.sql)" Click="OnExportSqlClicked" />
+                <MenuItem Header="📊 Export to Excel (.xlsx)" Click="OnExportExcelClicked" />
+              </MenuFlyout>
+            </Button.Flyout>
+          </Button>
+        </StackPanel>
+
+        <!-- Cell Inspector Toggle Button -->
+        <StackPanel Grid.Column="5" Orientation="Horizontal" Spacing="6">
+          <Button Command="{Binding ToggleCellInspectorCommand}"
+                  Background="#1A2029"
+                  BorderBrush="{Binding IsCellInspectorOpen, Converter={x:Static ObjectConverters.IsNotNull}, ConverterParameter=#10B981, FallbackValue=#262D38}"
+                  BorderThickness="1"
+                  Foreground="#F1F5F9"
+                  FontSize="11"
+                  Padding="10,6"
+                  CornerRadius="4"
+                  ToolTip.Tip="Open Cell Inspector / JSON Drawer">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <TextBlock Text="🔬" FontSize="11" VerticalAlignment="Center" />
+              <TextBlock Text="Inspector" VerticalAlignment="Center" FontWeight="SemiBold" />
+            </StackPanel>
+          </Button>
+        </StackPanel>
+
+        <!-- No-PK / Identifier Mode Badge -->
+        <Border Grid.Column="6"
+                Background="{Binding IsNoPkMode, Converter={x:Static ObjectConverters.IsNotNull}, ConverterParameter=#10B98122, FallbackValue=#171B22}"
+                BorderBrush="{Binding IsNoPkMode, Converter={x:Static ObjectConverters.IsNotNull}, ConverterParameter=#10B981, FallbackValue=#262D38}"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="8,4"
+                VerticalAlignment="Center">
+          <TextBlock Text="{Binding RowIdentifierDescription}"
+                     FontSize="11"
+                     FontWeight="SemiBold"
+                     Foreground="{Binding IsNoPkMode, Converter={x:Static ObjectConverters.IsNotNull}, ConverterParameter=#34D399, FallbackValue=#94A3B8}" />
+        </Border>
+      </Grid>
+    </Border>
+
+    <!-- Row 1: Dedicated Table Filter Bar -->
+    <Border Grid.Row="1"
+            Background="#13171D"
+            BorderBrush="#262D38"
+            BorderThickness="0,0,0,1"
+            Padding="12,8"
+            IsVisible="{Binding IsFilterBarOpen}">
+      <StackPanel Spacing="8">
+        <!-- Filter Header: Mode Selector & Active Badge -->
+        <Grid ColumnDefinitions="Auto,*,Auto">
+          <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12">
+            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+              <Path Width="11" Height="11" Stretch="Uniform" Fill="#10B981" Data="{StaticResource IconFilter}" VerticalAlignment="Center" />
+              <TextBlock Text="Filter Records" FontWeight="Bold" FontSize="12" Foreground="#F1F5F9" VerticalAlignment="Center" />
+            </StackPanel>
+
+            <!-- Mode Selector: Visual Builder vs Raw SQL -->
+            <Border Background="#0F1216" BorderBrush="#262D38" BorderThickness="1" CornerRadius="4" Padding="6,2">
+              <StackPanel Orientation="Horizontal" Spacing="10">
+                <RadioButton Content="Visual Builder"
+                             GroupName="FilterMode"
+                             IsChecked="{Binding !IsRawFilterMode}"
+                             FontSize="11" />
+                <RadioButton Content="Raw SQL WHERE"
+                             GroupName="FilterMode"
+                             IsChecked="{Binding IsRawFilterMode}"
+                             FontSize="11" />
+              </StackPanel>
+            </Border>
+          </StackPanel>
+
+          <!-- Active Filter Pill -->
+          <Border Grid.Column="2"
+                  Background="#10B98122"
+                  BorderBrush="#10B981"
+                  BorderThickness="1"
+                  CornerRadius="4"
+                  Padding="8,3"
+                  VerticalAlignment="Center"
+                  IsVisible="{Binding HasActiveFilter}">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <TextBlock Text="🎯" FontSize="11" VerticalAlignment="Center" />
+              <TextBlock Text="{Binding ActiveFilterSummary}"
+                         FontSize="11"
+                         FontWeight="SemiBold"
+                         Foreground="#34D399"
+                         VerticalAlignment="Center" />
+              <Button Content="✕ Clear"
+                      Command="{Binding ClearFilterCommand}"
+                      Background="Transparent"
+                      Foreground="#EF4444"
+                      Padding="4,0"
+                      FontSize="10"
+                      ToolTip.Tip="Clear Filter" />
+            </StackPanel>
+          </Border>
+        </Grid>
+
+        <!-- 1. Visual Builder Filter Mode -->
+        <StackPanel Spacing="6" IsVisible="{Binding !IsRawFilterMode}">
+          <!-- Filter Rows List -->
+          <ItemsControl ItemsSource="{Binding Filters}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate DataType="coreVm:TableFilterViewModel">
+                <Grid ColumnDefinitions="Auto,170,160,*,Auto" Margin="0,0,0,6">
+                  <!-- Logical Operator (WHERE for 1st row, AND/OR toggle for subsequent) -->
+                  <Panel Grid.Column="0" Width="68" Margin="0,0,8,0" VerticalAlignment="Center">
+                    <TextBlock Text="WHERE"
+                               FontWeight="Bold"
+                               FontSize="11"
+                               Foreground="#94A3B8"
+                               HorizontalAlignment="Center"
+                               IsVisible="{Binding IsFirstFilter}" />
+                    <Button Content="{Binding LogicalOp}"
+                            Command="{Binding ToggleLogicalOpCommand}"
+                            Background="#1A2029"
+                            BorderBrush="#262D38"
+                            BorderThickness="1"
+                            Foreground="#34D399"
+                            FontWeight="Bold"
+                            FontSize="11"
+                            Padding="6,4"
+                            CornerRadius="4"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"
+                            ToolTip.Tip="Click to toggle AND / OR"
+                            IsVisible="{Binding !IsFirstFilter}" />
+                  </Panel>
+
+                  <!-- Column Selector -->
+                  <ComboBox Grid.Column="1"
+                            ItemsSource="{Binding AvailableColumns}"
+                            SelectedItem="{Binding Field}"
+                            Background="#0F1216"
+                            BorderBrush="#262D38"
+                            Foreground="#F1F5F9"
+                            FontSize="12"
+                            Margin="0,0,8,0"
+                            HorizontalAlignment="Stretch" />
+
+                  <!-- Operator Selector -->
+                  <ComboBox Grid.Column="2"
+                            ItemsSource="{Binding AvailableOperators}"
+                            SelectedItem="{Binding SelectedOperatorOption}"
+                            Background="#0F1216"
+                            BorderBrush="#262D38"
+                            Foreground="#F1F5F9"
+                            FontSize="12"
+                            Margin="0,0,8,0"
+                            HorizontalAlignment="Stretch" />
+
+                  <!-- Value Input -->
+                  <TextBox Grid.Column="3"
+                           Text="{Binding Value}"
+                           IsEnabled="{Binding IsValueRequired}"
+                           PlaceholderText="{Binding ValuePlaceholder}"
+                           Background="#0F1216"
+                           BorderBrush="#262D38"
+                           Foreground="#F1F5F9"
+                           FontSize="12"
+                           Margin="0,0,8,0" />
+
+                  <!-- Remove Filter Button -->
+                  <Button Grid.Column="4"
+                          Content="✕"
+                          Command="{Binding $parent[UserControl].((vm:TableDataViewModel)DataContext).RemoveFilterCommand}"
+                          CommandParameter="{Binding .}"
+                          Background="#1A2029"
+                          BorderBrush="#262D38"
+                          BorderThickness="1"
+                          Foreground="#EF4444"
+                          FontWeight="Bold"
+                          Padding="8,6"
+                          CornerRadius="4"
+                          ToolTip.Tip="Remove condition" />
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <!-- Visual Builder Action Buttons -->
+          <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+            <Button Grid.Column="0"
+                    Content="➕ Add Condition"
+                    Command="{Binding AddFilterCommand}"
+                    Background="#1A2029"
+                    BorderBrush="#262D38"
+                    BorderThickness="1"
+                    Foreground="#34D399"
+                    FontSize="11"
+                    Padding="10,6"
+                    CornerRadius="4" />
+
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
+              <Button Content="✕ Clear"
+                      Command="{Binding ClearFilterCommand}"
+                      Background="#1A2029"
+                      BorderBrush="#262D38"
+                      BorderThickness="1"
+                      Foreground="#94A3B8"
+                      FontSize="11"
+                      Padding="12,6"
+                      CornerRadius="4" />
+
+              <Button Content="🔍 Apply Filter"
+                      Command="{Binding ApplyFilterCommand}"
+                      Background="#10B981"
+                      Foreground="#0F1216"
+                      FontWeight="Bold"
+                      FontSize="12"
+                      Padding="16,6"
+                      CornerRadius="4" />
+            </StackPanel>
+          </Grid>
+        </StackPanel>
+
+        <!-- 2. Raw SQL WHERE Filter Mode -->
+        <Grid ColumnDefinitions="*,Auto,Auto" Margin="0,2,0,0">
+          <TextBox Grid.Column="0"
+                   Text="{Binding RawFilterText}"
+                   PlaceholderText="Enter WHERE condition, e.g.: price > 50 AND (status = 'ACTIVE' OR total_amount >= 100)"
+                   Background="#0F1216"
+                   BorderBrush="#262D38"
+                   Foreground="#F1F5F9"
+                   FontFamily="Consolas, monospace"
+                   FontSize="12"
+                   Margin="0,0,8,0"
+                   IsVisible="{Binding IsRawFilterMode}" />
+
+          <Button Grid.Column="1"
+                  Content="✕ Clear"
+                  Command="{Binding ClearFilterCommand}"
+                  Background="#1A2029"
+                  BorderBrush="#262D38"
+                  BorderThickness="1"
+                  Foreground="#94A3B8"
+                  FontSize="11"
+                  Padding="12,6"
+                  CornerRadius="4"
+                  Margin="0,0,8,0"
+                  IsVisible="{Binding IsRawFilterMode}" />
+
+          <Button Grid.Column="2"
+                  Content="🔍 Apply Filter"
+                  Command="{Binding ApplyFilterCommand}"
+                  Background="#10B981"
+                  Foreground="#0F1216"
+                  FontWeight="Bold"
+                  FontSize="12"
+                  Padding="16,6"
+                  CornerRadius="4"
+                  IsVisible="{Binding IsRawFilterMode}" />
+        </Grid>
+      </StackPanel>
+    </Border>
+
+    <!-- Row 2: SQL Preview Banner (if generated) -->
+    <Border Grid.Row="2"
+            Background="#12151A"
+            BorderBrush="#262D38"
+            BorderThickness="0,0,0,1"
+            Padding="10"
+            IsVisible="{Binding GeneratedSqlPreview, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+      <Grid RowDefinitions="Auto,*">
+        <TextBlock Grid.Row="0" Text="Generated SQL Statements:" FontWeight="Bold" FontSize="11" Foreground="#34D399" Margin="0,0,0,4" />
+        <TextBox Grid.Row="1"
+                 Text="{Binding GeneratedSqlPreview}"
+                 IsReadOnly="True"
+                 FontFamily="Consolas, monospace"
+                 FontSize="12"
+                 MaxHeight="120"
+                 Background="#0F1216"
+                 Foreground="#F8FAFC" />
+      </Grid>
+    </Border>
+
+    <!-- Row 3: Main DataGrid & Cell Inspector Drawer -->
+    <Grid Grid.Row="3" ColumnDefinitions="*,Auto,Auto">
+      <!-- DataGrid -->
+      <DataGrid Grid.Column="0"
+                x:Name="TableGrid"
+                AutoGenerateColumns="False"
+                SelectedItem="{Binding SelectedRow}"
+                GridLinesVisibility="All"
+                CanUserResizeColumns="True"
+                CanUserSortColumns="True"
+                Background="#0F1216"
+                BorderThickness="0">
+        <DataGrid.ContextMenu>
+          <ContextMenu>
+            <MenuItem Header="🔬 Inspect / Edit Cell Value (JSON / Text)" Click="OnInspectCellClicked" />
+            <Separator />
+            <MenuItem Header="🔍 Filter by this row/cell" Click="OnFilterByCellClicked" />
+            <MenuItem Header="🚫 Filter excluding this row/cell" Click="OnFilterExcludeCellClicked" />
+            <Separator />
+            <MenuItem Header="➕ Add Row" Command="{Binding AddNewRowCommand}" />
+            <MenuItem Header="🗑️ Delete Row" Command="{Binding DeleteSelectedRowCommand}" />
+            <Separator />
+            <MenuItem Header="📤 Export Table Data">
+              <MenuItem Header="📄 Export to CSV (.csv)" Click="OnExportCsvClicked" />
+              <MenuItem Header="🌐 Export to JSON (.json)" Click="OnExportJsonClicked" />
+              <MenuItem Header="💾 Export to SQL Inserts (.sql)" Click="OnExportSqlClicked" />
+            </MenuItem>
+          </ContextMenu>
+        </DataGrid.ContextMenu>
+      </DataGrid>
+
+      <!-- Splitter between Grid and Inspector -->
+      <GridSplitter Grid.Column="1"
+                    Width="3"
+                    Background="#262D38"
+                    ResizeDirection="Columns"
+                    IsVisible="{Binding IsCellInspectorOpen}" />
+
+      <!-- Cell Inspector Drawer Panel -->
+      <Border Grid.Column="2"
+              Width="380"
+              IsVisible="{Binding IsCellInspectorOpen}">
+        <views:CellInspectorView DataContext="{Binding CellInspector}" />
+      </Border>
+    </Grid>
+
+    <!-- Row 4: Pagination & Status Bar -->
+    <Border Grid.Row="4"
+            Background="#13171D"
+            BorderBrush="#262D38"
+            BorderThickness="0,1,0,0"
+            Padding="10,6">
+      <Grid ColumnDefinitions="Auto,*,Auto">
+        <!-- Status Text -->
+        <TextBlock Grid.Column="0"
+                   Text="{Binding StatusMessage}"
+                   FontSize="11"
+                   Foreground="#94A3B8"
+                   VerticalAlignment="Center" />
+
+        <!-- Pagination Controls -->
+        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+          <Button Content="◀ Prev"
+                  Command="{Binding PrevPageCommand}"
+                  Background="#1A2029"
+                  BorderBrush="#262D38"
+                  BorderThickness="1"
+                  Foreground="#94A3B8"
+                  FontSize="11"
+                  Padding="8,4"
+                  CornerRadius="4" />
+
+          <TextBlock Text="{Binding PageNumber, StringFormat='Page {0}'}"
+                     FontSize="11"
+                     Foreground="#F1F5F9"
+                     VerticalAlignment="Center" />
+
+          <Button Content="Next ▶"
+                  Command="{Binding NextPageCommand}"
+                  Background="#1A2029"
+                  BorderBrush="#262D38"
+                  BorderThickness="1"
+                  Foreground="#94A3B8"
+                  FontSize="11"
+                  Padding="8,4"
+                  CornerRadius="4" />
+        </StackPanel>
+      </Grid>
+    </Border>
+  </Grid>
+</UserControl>

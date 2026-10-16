@@ -1,0 +1,226 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:HornetStudio.Desktop.ViewModels.Tabs"
+             x:Class="HornetStudio.Desktop.Views.QueryEditorView"
+             x:DataType="vm:QueryEditorViewModel">
+
+  <UserControl.KeyBindings>
+    <KeyBinding Gesture="F5" Command="{Binding ExecuteQueryCommand}" />
+    <KeyBinding Gesture="Ctrl+E" Command="{Binding ExplainQueryCommand}" />
+    <KeyBinding Gesture="Ctrl+B" Command="{Binding FormatQueryCommand}" />
+    <KeyBinding Gesture="Ctrl+Shift+F" Command="{Binding FormatQueryCommand}" />
+  </UserControl.KeyBindings>
+
+  <Grid RowDefinitions="Auto,*,Auto,2*">
+    <!-- Toolbar -->
+    <Border Grid.Row="0"
+            Background="#171B22"
+            BorderBrush="#262D38"
+            BorderThickness="0,0,0,1"
+            Padding="8,6">
+      <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,*,Auto">
+        <!-- Run Query -->
+        <Button Grid.Column="0"
+                Command="{Binding ExecuteQueryCommand}"
+                Background="#10B981"
+                Foreground="#0F1216"
+                FontWeight="Bold"
+                FontSize="12"
+                Padding="12,6"
+                CornerRadius="4"
+                Margin="0,0,6,0">
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <Path Width="10" Height="10" Stretch="Uniform" Fill="#0F1216" Data="{StaticResource IconPlay}" VerticalAlignment="Center" />
+            <TextBlock Text="Run (F5)" VerticalAlignment="Center" />
+          </StackPanel>
+        </Button>
+
+        <!-- Cancel -->
+        <Button Grid.Column="1"
+                Command="{Binding CancelExecutionCommand}"
+                IsEnabled="{Binding IsExecuting}"
+                Background="#262D38"
+                Foreground="#F1F5F9"
+                FontSize="12"
+                Padding="10,6"
+                CornerRadius="4"
+                Margin="0,0,6,0">
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <Path Width="10" Height="10" Stretch="Uniform" Fill="#EF4444" Data="{StaticResource IconCancel}" VerticalAlignment="Center" />
+            <TextBlock Text="Cancel" VerticalAlignment="Center" />
+          </StackPanel>
+        </Button>
+
+        <!-- Explain Query -->
+        <Button Grid.Column="2"
+                Command="{Binding ExplainQueryCommand}"
+                IsEnabled="{Binding !IsExecuting}"
+                Background="#1A2029"
+                BorderBrush="#8B5CF6"
+                BorderThickness="1"
+                Foreground="#A78BFA"
+                FontWeight="SemiBold"
+                FontSize="11"
+                Padding="10,6"
+                CornerRadius="4"
+                Margin="0,0,10,0"
+                ToolTip.Tip="Explain Query Plan (Ctrl+E)">
+          <StackPanel Orientation="Horizontal" Spacing="4">
+            <TextBlock Text="🔍 Explain" VerticalAlignment="Center" />
+          </StackPanel>
+        </Button>
+
+        <!-- Dry Run Mode Toggle -->
+        <ToggleButton Grid.Column="3"
+                      IsChecked="{Binding IsDryRun}"
+                      Background="Transparent"
+                      BorderBrush="#F59E0B"
+                      BorderThickness="1"
+                      Foreground="#F59E0B"
+                      FontSize="11"
+                      Padding="8,6"
+                      CornerRadius="4"
+                      Margin="0,0,10,0"
+                      ToolTip.Tip="Dry Run: Simulates query execution inside an isolated transaction that automatically rolls back. Zero risk to database!">
+          <StackPanel Orientation="Horizontal" Spacing="4">
+            <TextBlock Text="⚡ Dry Run" FontWeight="SemiBold" />
+          </StackPanel>
+        </ToggleButton>
+
+        <!-- Format Query (Prettify) -->
+        <Button Grid.Column="4"
+                Command="{Binding FormatQueryCommand}"
+                Background="#1A2029"
+                BorderBrush="#38BDF8"
+                BorderThickness="1"
+                Foreground="#38BDF8"
+                FontWeight="SemiBold"
+                FontSize="11"
+                Padding="10,6"
+                CornerRadius="4"
+                Margin="0,0,6,0"
+                ToolTip.Tip="Format SQL (Prettify - Ctrl+B or Ctrl+Shift+F)">
+          <StackPanel Orientation="Horizontal" Spacing="4">
+            <TextBlock Text="✨ Format" VerticalAlignment="Center" />
+          </StackPanel>
+        </Button>
+
+        <!-- Save Query -->
+        <Button Grid.Column="5"
+                Command="{Binding SaveQueryCommand}"
+                Background="#1A2029"
+                BorderBrush="#262D38"
+                BorderThickness="1"
+                Foreground="#94A3B8"
+                FontSize="11"
+                Padding="8,6"
+                CornerRadius="4"
+                Margin="0,0,6,0"
+                ToolTip.Tip="Save to Favorites">
+          <Path Width="12" Height="12" Stretch="Uniform" Fill="#FBBF24" Data="{StaticResource IconSave}" />
+        </Button>
+
+        <!-- Notification Banner / Execution Status -->
+        <TextBlock Grid.Column="6"
+                   Text="{Binding StatusText}"
+                   FontSize="12"
+                   Foreground="#34D399"
+                   VerticalAlignment="Center"
+                   Margin="10,0" />
+
+        <!-- Export Dropdown / Actions -->
+        <StackPanel Grid.Column="7" Orientation="Horizontal" Spacing="6">
+          <Button Content="CSV"
+                  Click="OnExportCsvClicked"
+                  Background="#1A2029"
+                  BorderBrush="#262D38"
+                  BorderThickness="1"
+                  Foreground="#94A3B8"
+                  FontSize="11"
+                  Padding="8,5"
+                  CornerRadius="4"
+                  ToolTip.Tip="Export Result to CSV" />
+
+          <Button Content="JSON"
+                  Click="OnExportJsonClicked"
+                  Background="#1A2029"
+                  BorderBrush="#262D38"
+                  BorderThickness="1"
+                  Foreground="#94A3B8"
+                  FontSize="11"
+                  Padding="8,5"
+                  CornerRadius="4"
+                  ToolTip.Tip="Export Result to JSON" />
+
+          <Button Content="SQL"
+                  Click="OnExportSqlClicked"
+                  Background="#1A2029"
+                  BorderBrush="#262D38"
+                  BorderThickness="1"
+                  Foreground="#94A3B8"
+                  FontSize="11"
+                  Padding="8,5"
+                  CornerRadius="4"
+                  ToolTip.Tip="Export Result to SQL INSERTs" />
+
+          <Button Content="XLSX"
+                  Click="OnExportExcelClicked"
+                  Background="#1A2029"
+                  BorderBrush="#262D38"
+                  BorderThickness="1"
+                  Foreground="#34D399"
+                  FontWeight="SemiBold"
+                  FontSize="11"
+                  Padding="8,5"
+                  CornerRadius="4"
+                  ToolTip.Tip="Export Result to Excel (.xlsx)" />
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <!-- Query Text Input Area -->
+    <TextBox Grid.Row="1"
+             Text="{Binding QueryText}"
+             AcceptsReturn="True"
+             AcceptsTab="True"
+             FontFamily="Consolas, Cascadia Code, JetBrains Mono, Courier New, monospace"
+             FontSize="14"
+             Background="#0F1216"
+             Foreground="#F8FAFC"
+             BorderThickness="0"
+             Padding="14"
+             PlaceholderText="Write SQL query here..." />
+
+    <!-- Splitter -->
+    <GridSplitter Grid.Row="2" Height="4" Background="#262D38" ResizeDirection="Rows" />
+
+    <!-- Results Panel -->
+    <Grid Grid.Row="3" Background="#111419">
+      <!-- Error Message Banner (if any) -->
+      <Border Background="#EF444422"
+              BorderBrush="#EF4444"
+              BorderThickness="1"
+              CornerRadius="6"
+              Padding="14"
+              Margin="10"
+              VerticalAlignment="Top"
+              IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+        <TextBlock Text="{Binding ErrorMessage}"
+                   Foreground="#FCA5A5"
+                   FontSize="13"
+                   TextWrapping="Wrap" />
+      </Border>
+
+      <!-- Results Grid -->
+      <DataGrid x:Name="ResultsGrid"
+                AutoGenerateColumns="False"
+                IsReadOnly="True"
+                GridLinesVisibility="All"
+                CanUserResizeColumns="True"
+                CanUserSortColumns="True"
+                Background="#0F1216"
+                BorderThickness="0"
+                IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNullOrEmpty}}" />
+    </Grid>
+  </Grid>
+</UserControl>

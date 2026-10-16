@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=HornetStudio
+Comment=Fast, modern, native database IDE
+Exec=/usr/bin/hornetstudio %U
+Icon=hornetstudio
+Terminal=false
+Type=Application
+Categories=Development;Database;IDE;
+StartupWMClass=HornetStudio.Desktop

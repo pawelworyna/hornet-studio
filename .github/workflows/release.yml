@@ -1,0 +1,200 @@
+name: Release & Packaging
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'SemVer version string (e.g. 1.15.0)'
+        required: true
+        default: '1.15.0'
+
+permissions:
+  contents: write
+
+jobs:
+  # -------------------------------------------------------------
+  # 1. WINDOWS: x64 & ARM64 (Installer .exe + Portable .zip)
+  # -------------------------------------------------------------
+  build-windows:
+    name: Build Windows (x64 & arm64)
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '11.0.x'
+        include-prerelease: true
+
+    - name: Determine Version
+      id: get_version
+      shell: pwsh
+      run: |
+        $ver = "${{ github.event.inputs.version }}"
+        if ([string]::IsNullOrWhiteSpace($ver)) {
+          $ref = "${{ github.ref_name }}"
+          if ($ref -like "v*") {
+            $ver = $ref.Substring(1)
+          } else {
+            $ver = "1.15.0"
+          }
+        }
+        Write-Host "Version: $ver"
+        echo "VERSION=$ver" >> $env:GITHUB_OUTPUT
+
+    - name: Run Unit Tests
+      run: dotnet test HornetStudio.slnx --configuration Release --verbosity normal
+
+    - name: Build Windows Installers & Portable ZIPs
+      shell: pwsh
+      run: |
+        .\scripts\build-installer.ps1 -Version "${{ steps.get_version.outputs.VERSION }}" -Architecture all
+
+    - name: Upload Windows Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-windows
+        path: artifacts/installer/*
+        if-no-files-found: error
+
+  # -------------------------------------------------------------
+  # 2. MACOS: Apple Silicon osx-arm64 (.dmg + .app.zip)
+  # -------------------------------------------------------------
+  build-macos:
+    name: Build macOS Apple Silicon (.dmg)
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '11.0.x'
+        include-prerelease: true
+
+    - name: Determine Version
+      id: get_version
+      run: |
+        ver="${{ github.event.inputs.version }}"
+        if [ -z "$ver" ]; then
+          ref="${{ github.ref_name }}"
+          if [[ "$ref" == v* ]]; then
+            ver="${ref#v}"
+          else
+            ver="1.15.0"
+          fi
+        fi
+        echo "Version: $ver"
+        echo "VERSION=$ver" >> $GITHUB_OUTPUT
+
+    - name: Build macOS App & DMG
+      run: |
+        chmod +x scripts/build-dmg.sh
+        ./scripts/build-dmg.sh "${{ steps.get_version.outputs.VERSION }}" "osx-arm64"
+
+    - name: Upload macOS Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-macos
+        path: artifacts/installer/*
+        if-no-files-found: error
+
+  # -------------------------------------------------------------
+  # 3. LINUX: x64 & ARM64 (.deb + .tar.gz)
+  # -------------------------------------------------------------
+  build-linux:
+    name: Build Linux (.deb & tarball)
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '11.0.x'
+        include-prerelease: true
+
+    - name: Determine Version
+      id: get_version
+      run: |
+        ver="${{ github.event.inputs.version }}"
+        if [ -z "$ver" ]; then
+          ref="${{ github.ref_name }}"
+          if [[ "$ref" == v* ]]; then
+            ver="${ref#v}"
+          else
+            ver="1.15.0"
+          fi
+        fi
+        echo "Version: $ver"
+        echo "VERSION=$ver" >> $GITHUB_OUTPUT
+
+    - name: Build Linux x64 & arm64 DEB and Tarballs
+      run: |
+        chmod +x scripts/build-deb.sh
+        ./scripts/build-deb.sh "${{ steps.get_version.outputs.VERSION }}" "linux-x64"
+        ./scripts/build-deb.sh "${{ steps.get_version.outputs.VERSION }}" "linux-arm64"
+
+    - name: Upload Linux Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-linux
+        path: artifacts/installer/*
+        if-no-files-found: error
+
+  # -------------------------------------------------------------
+  # 4. PUBLISH RELEASE: Collect all assets and publish
+  # -------------------------------------------------------------
+  publish-release:
+    name: Publish GitHub Release
+    needs: [build-windows, build-macos, build-linux]
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Download All Release Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: download_artifacts
+        merge-multiple: true
+
+    - name: Display Release Files
+      run: |
+        ls -lh download_artifacts/
+
+    - name: Determine Release Tag
+      id: release_info
+      run: |
+        tag="${{ github.ref_name }}"
+        if [ -z "$tag" ] || [[ "$tag" != v* ]]; then
+          ver="${{ github.event.inputs.version }}"
+          tag="v${ver:-1.15.0}"
+        fi
+        echo "TAG=$tag" >> $GITHUB_OUTPUT
+
+    - name: Create GitHub Release & Upload All Platform Assets
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ steps.release_info.outputs.TAG }}
+        name: HornetStudio ${{ steps.release_info.outputs.TAG }}
+        draft: false
+        prerelease: false
+        generate_release_notes: true
+        files: download_artifacts/*
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

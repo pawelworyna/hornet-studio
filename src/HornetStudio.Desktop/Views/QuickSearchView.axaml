@@ -1,0 +1,148 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:HornetStudio.Desktop.ViewModels"
+             x:Class="HornetStudio.Desktop.Views.QuickSearchView"
+             x:DataType="vm:QuickSearchViewModel">
+
+  <!-- Modal Container -->
+  <Border Width="560"
+          MaxHeight="500"
+          Background="#13171D"
+          BorderBrush="#10B981"
+          BorderThickness="1"
+          CornerRadius="8"
+          BoxShadow="0 10 30 0 #55000000"
+          ClipToBounds="True">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+      <!-- Search Input Header -->
+      <Border Grid.Row="0"
+              Background="#171B22"
+              BorderBrush="#262D38"
+              BorderThickness="0,0,0,1"
+              Padding="12,10">
+        <Grid ColumnDefinitions="Auto,*,Auto">
+          <TextBlock Grid.Column="0"
+                     Text="🔍"
+                     FontSize="14"
+                     VerticalAlignment="Center"
+                     Margin="0,0,10,0" />
+
+          <TextBox Grid.Column="1"
+                   x:Name="SearchBox"
+                   Text="{Binding SearchText, Mode=TwoWay}"
+                   PlaceholderText="Search tables, views, saved queries... (Ctrl+K)"
+                   Background="Transparent"
+                   BorderThickness="0"
+                   Foreground="#F1F5F9"
+                   FontSize="14"
+                   Padding="4,6"
+                   VerticalAlignment="Center" />
+
+          <Button Grid.Column="2"
+                  Command="{Binding CloseCommand}"
+                  Background="Transparent"
+                  BorderThickness="0"
+                  Padding="6"
+                  ToolTip.Tip="Close (Esc)">
+            <Path Width="10" Height="10" Stretch="Uniform" Fill="#94A3B8" Data="{StaticResource IconCancel}" />
+          </Button>
+        </Grid>
+      </Border>
+
+      <!-- Results List -->
+      <ListBox Grid.Row="1"
+               ItemsSource="{Binding FilteredItems}"
+               SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+               DoubleTapped="OnListBoxDoubleTapped"
+               Background="Transparent"
+               BorderThickness="0"
+               Padding="4"
+               MaxHeight="360"
+               ScrollViewer.VerticalScrollBarVisibility="Auto">
+        <ListBox.ItemTemplate>
+          <DataTemplate DataType="vm:QuickSearchItemViewModel">
+            <Border Padding="10,8"
+                    CornerRadius="6"
+                    Background="Transparent">
+              <Grid ColumnDefinitions="Auto,*,Auto">
+                <!-- Icon -->
+                <TextBlock Grid.Column="0"
+                           Text="{Binding IconText}"
+                           FontSize="14"
+                           VerticalAlignment="Center"
+                           Margin="0,0,10,0" />
+
+                <!-- Title & Subtitle -->
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                  <TextBlock Text="{Binding Title}"
+                             FontSize="13"
+                             FontWeight="SemiBold"
+                             Foreground="#F1F5F9"
+                             TextTrimming="CharacterEllipsis" />
+                  <TextBlock Text="{Binding Subtitle}"
+                             FontSize="11"
+                             Foreground="#64748B"
+                             TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+
+                <!-- Type Badge -->
+                <Border Grid.Column="2"
+                        Background="#1E293B"
+                        BorderBrush="{Binding BadgeColor}"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        Padding="6,2"
+                        VerticalAlignment="Center">
+                  <TextBlock Text="{Binding ItemType}"
+                             FontSize="10"
+                             FontWeight="Bold"
+                             Foreground="{Binding BadgeColor}" />
+                </Border>
+              </Grid>
+            </Border>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+
+      <!-- Footer / Keyboard Shortcuts Hint -->
+      <Border Grid.Row="2"
+              Background="#0F1216"
+              BorderBrush="#262D38"
+              BorderThickness="0,1,0,0"
+              Padding="12,8">
+        <Grid ColumnDefinitions="Auto,*,Auto">
+          <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="16">
+            <StackPanel Orientation="Horizontal" Spacing="4">
+              <Border Background="#1E293B" CornerRadius="3" Padding="4,1">
+                <TextBlock Text="↵ Enter" FontSize="10" Foreground="#94A3B8" FontWeight="Bold" />
+              </Border>
+              <TextBlock Text="Open Data" FontSize="11" Foreground="#64748B" VerticalAlignment="Center" />
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Spacing="4">
+              <Border Background="#1E293B" CornerRadius="3" Padding="4,1">
+                <TextBlock Text="Alt + ↵" FontSize="10" Foreground="#94A3B8" FontWeight="Bold" />
+              </Border>
+              <TextBlock Text="Structure" FontSize="11" Foreground="#64748B" VerticalAlignment="Center" />
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Spacing="4">
+              <Border Background="#1E293B" CornerRadius="3" Padding="4,1">
+                <TextBlock Text="↑ / ↓" FontSize="10" Foreground="#94A3B8" FontWeight="Bold" />
+              </Border>
+              <TextBlock Text="Navigate" FontSize="11" Foreground="#64748B" VerticalAlignment="Center" />
+            </StackPanel>
+          </StackPanel>
+
+          <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4">
+            <Border Background="#1E293B" CornerRadius="3" Padding="4,1">
+              <TextBlock Text="Esc" FontSize="10" Foreground="#94A3B8" FontWeight="Bold" />
+            </Border>
+            <TextBlock Text="Close" FontSize="11" Foreground="#64748B" VerticalAlignment="Center" />
+          </StackPanel>
+        </Grid>
+      </Border>
+    </Grid>
+  </Border>
+</UserControl>

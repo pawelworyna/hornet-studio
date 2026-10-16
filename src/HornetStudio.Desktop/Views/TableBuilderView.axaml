@@ -1,0 +1,232 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:HornetStudio.Desktop.ViewModels.Tabs"
+             x:Class="HornetStudio.Desktop.Views.TableBuilderView"
+             x:DataType="vm:TableBuilderViewModel">
+
+  <Grid RowDefinitions="Auto,*">
+    <!-- Header / Configuration Bar -->
+    <Border Grid.Row="0"
+            Background="#171B22"
+            BorderBrush="#262D38"
+            BorderThickness="0,0,0,1"
+            Padding="14,10">
+      <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,*,Auto">
+        <!-- Table Name Input -->
+        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" Margin="0,0,16,0">
+          <TextBlock Text="Table Name:" FontSize="12" FontWeight="SemiBold" Foreground="#94A3B8" VerticalAlignment="Center" />
+          <TextBox Text="{Binding TableName, Mode=TwoWay}"
+                   Width="180"
+                   Background="#0F1216"
+                   BorderBrush="#262D38"
+                   Foreground="#F1F5F9"
+                   FontWeight="Bold"
+                   FontSize="13"
+                   Padding="8,5"
+                   CornerRadius="4" />
+        </StackPanel>
+
+        <!-- Schema Input -->
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" Margin="0,0,16,0">
+          <TextBlock Text="Schema:" FontSize="12" FontWeight="SemiBold" Foreground="#94A3B8" VerticalAlignment="Center" />
+          <TextBox Text="{Binding Schema, Mode=TwoWay}"
+                   Width="120"
+                   Background="#0F1216"
+                   BorderBrush="#262D38"
+                   Foreground="#F1F5F9"
+                   FontSize="12"
+                   Padding="8,5"
+                   CornerRadius="4" />
+        </StackPanel>
+
+        <!-- Add Column Button -->
+        <Button Grid.Column="2"
+                Command="{Binding AddColumnCommand}"
+                Background="#1A2029"
+                BorderBrush="#10B981"
+                BorderThickness="1"
+                Foreground="#34D399"
+                FontWeight="SemiBold"
+                FontSize="11"
+                Padding="10,6"
+                CornerRadius="4"
+                Margin="0,0,10,0">
+          <StackPanel Orientation="Horizontal" Spacing="4">
+            <Path Width="10" Height="10" Stretch="Uniform" Fill="#34D399" Data="{StaticResource IconAdd}" VerticalAlignment="Center" />
+            <TextBlock Text="Add Column" VerticalAlignment="Center" />
+          </StackPanel>
+        </Button>
+
+        <!-- Create Table Action Button -->
+        <Button Grid.Column="3"
+                Command="{Binding CreateTableCommand}"
+                IsEnabled="{Binding !IsCreating}"
+                Background="#10B981"
+                Foreground="#0F1216"
+                FontWeight="Bold"
+                FontSize="12"
+                Padding="16,6"
+                CornerRadius="4">
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <Path Width="10" Height="10" Stretch="Uniform" Fill="#0F1216" Data="{StaticResource IconPlay}" VerticalAlignment="Center" />
+            <TextBlock Text="Create Table" VerticalAlignment="Center" />
+          </StackPanel>
+        </Button>
+
+        <!-- Status & Error Messages -->
+        <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center" Margin="16,0,0,0">
+          <TextBlock Text="{Binding StatusMessage}"
+                     Foreground="#34D399"
+                     FontSize="12"
+                     FontWeight="SemiBold"
+                     VerticalAlignment="Center"
+                     IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+          <TextBlock Text="{Binding ErrorMessage}"
+                     Foreground="#EF4444"
+                     FontSize="12"
+                     FontWeight="SemiBold"
+                     VerticalAlignment="Center"
+                     IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <!-- Main Content Area: Columns Grid (Left) + Live DDL Preview (Right) -->
+    <Grid Grid.Row="1" ColumnDefinitions="2*,Auto,*">
+      <!-- Left: Column Definitions -->
+      <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" Padding="14">
+        <StackPanel Spacing="8">
+          <!-- Column Headers -->
+          <Border Background="#171B22" BorderBrush="#262D38" BorderThickness="1" CornerRadius="6" Padding="10,6">
+            <Grid ColumnDefinitions="3*,2*,Auto,Auto,Auto,2*,Auto">
+              <TextBlock Grid.Column="0" Text="Column Name" FontSize="11" FontWeight="Bold" Foreground="#94A3B8" />
+              <TextBlock Grid.Column="1" Text="Type" FontSize="11" FontWeight="Bold" Foreground="#94A3B8" Margin="8,0,0,0" />
+              <TextBlock Grid.Column="2" Text="PK 🔑" FontSize="11" FontWeight="Bold" Foreground="#94A3B8" Width="45" TextAlignment="Center" />
+              <TextBlock Grid.Column="3" Text="Nullable" FontSize="11" FontWeight="Bold" Foreground="#94A3B8" Width="55" TextAlignment="Center" />
+              <TextBlock Grid.Column="4" Text="Auto ⚡" FontSize="11" FontWeight="Bold" Foreground="#94A3B8" Width="50" TextAlignment="Center" />
+              <TextBlock Grid.Column="5" Text="Default Value" FontSize="11" FontWeight="Bold" Foreground="#94A3B8" Margin="8,0,0,0" />
+              <TextBlock Grid.Column="6" Text="Actions" FontSize="11" FontWeight="Bold" Foreground="#94A3B8" Width="70" TextAlignment="Center" />
+            </Grid>
+          </Border>
+
+          <!-- Column Rows -->
+          <ItemsControl ItemsSource="{Binding Columns}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate DataType="vm:TableColumnDraftViewModel">
+                <Border Background="#13171D"
+                        BorderBrush="#262D38"
+                        BorderThickness="1"
+                        CornerRadius="6"
+                        Padding="8,6"
+                        Margin="0,0,0,4">
+                  <Grid ColumnDefinitions="3*,2*,Auto,Auto,Auto,2*,Auto">
+                    <!-- Column Name -->
+                    <TextBox Grid.Column="0"
+                             Text="{Binding Name, Mode=TwoWay}"
+                             Background="#0F1216"
+                             BorderBrush="#262D38"
+                             Foreground="#F1F5F9"
+                             FontSize="12"
+                             Padding="6,4"
+                             CornerRadius="4" />
+
+                    <!-- Data Type Combo -->
+                    <ComboBox Grid.Column="1"
+                              ItemsSource="{x:Static vm:TableBuilderViewModel.CommonDataTypes}"
+                              SelectedItem="{Binding DataType, Mode=TwoWay}"
+                              HorizontalAlignment="Stretch"
+                              Background="#0F1216"
+                              BorderBrush="#262D38"
+                              Foreground="#38BDF8"
+                              FontSize="12"
+                              Padding="6,4"
+                              CornerRadius="4"
+                              Margin="8,0,0,0" />
+
+                    <!-- Primary Key Checkbox -->
+                    <CheckBox Grid.Column="2"
+                              IsChecked="{Binding IsPrimaryKey, Mode=TwoWay}"
+                              Width="45"
+                              HorizontalAlignment="Center" />
+
+                    <!-- Nullable Checkbox -->
+                    <CheckBox Grid.Column="3"
+                              IsChecked="{Binding IsNullable, Mode=TwoWay}"
+                              Width="55"
+                              HorizontalAlignment="Center" />
+
+                    <!-- Auto-Increment Checkbox -->
+                    <CheckBox Grid.Column="4"
+                              IsChecked="{Binding IsAutoIncrement, Mode=TwoWay}"
+                              Width="50"
+                              HorizontalAlignment="Center" />
+
+                    <!-- Default Value -->
+                    <TextBox Grid.Column="5"
+                             Text="{Binding DefaultValue, Mode=TwoWay}"
+                             Background="#0F1216"
+                             BorderBrush="#262D38"
+                             Foreground="#94A3B8"
+                             FontSize="12"
+                             Padding="6,4"
+                             CornerRadius="4"
+                             Margin="8,0,0,0" />
+
+                    <!-- Row Controls: Up / Down / Remove -->
+                    <StackPanel Grid.Column="6" Orientation="Horizontal" Spacing="4" HorizontalAlignment="Center" Width="70">
+                      <Button Command="{Binding $parent[UserControl].((vm:TableBuilderViewModel)DataContext).MoveColumnUpCommand}"
+                              CommandParameter="{Binding}"
+                              Background="Transparent"
+                              Padding="3"
+                              ToolTip.Tip="Move Up">
+                        <TextBlock Text="▲" FontSize="9" Foreground="#94A3B8" />
+                      </Button>
+
+                      <Button Command="{Binding $parent[UserControl].((vm:TableBuilderViewModel)DataContext).MoveColumnDownCommand}"
+                              CommandParameter="{Binding}"
+                              Background="Transparent"
+                              Padding="3"
+                              ToolTip.Tip="Move Down">
+                        <TextBlock Text="▼" FontSize="9" Foreground="#94A3B8" />
+                      </Button>
+
+                      <Button Command="{Binding $parent[UserControl].((vm:TableBuilderViewModel)DataContext).RemoveColumnCommand}"
+                              CommandParameter="{Binding}"
+                              Background="Transparent"
+                              Padding="3"
+                              ToolTip.Tip="Delete Column">
+                        <Path Width="9" Height="9" Stretch="Uniform" Fill="#EF4444" Data="{StaticResource IconCancel}" />
+                      </Button>
+                    </StackPanel>
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+      </ScrollViewer>
+
+      <!-- Splitter -->
+      <GridSplitter Grid.Column="1" Width="3" Background="#262D38" ResizeDirection="Columns" />
+
+      <!-- Right: Real-time DDL Preview -->
+      <Border Grid.Column="2" Background="#0F1216" Padding="14">
+        <Grid RowDefinitions="Auto,*">
+          <TextBlock Grid.Row="0" Text="Real-time DDL Preview:" FontWeight="Bold" FontSize="12" Foreground="#34D399" Margin="0,0,0,8" />
+          <TextBox Grid.Row="1"
+                   Text="{Binding GeneratedDdl}"
+                   IsReadOnly="True"
+                   AcceptsReturn="True"
+                   FontFamily="Consolas, Cascadia Code, monospace"
+                   FontSize="12"
+                   Background="#13171D"
+                   BorderBrush="#262D38"
+                   BorderThickness="1"
+                   Foreground="#F1F5F9"
+                   Padding="10"
+                   CornerRadius="6" />
+        </Grid>
+      </Border>
+    </Grid>
+  </Grid>
+</UserControl>

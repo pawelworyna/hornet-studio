@@ -1,0 +1,152 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:HornetStudio.Desktop.ViewModels.Tabs"
+             x:Class="HornetStudio.Desktop.Views.BackupRestoreView"
+             x:DataType="vm:BackupRestoreViewModel">
+  <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <StackPanel Margin="30" Spacing="20" MaxWidth="760" HorizontalAlignment="Center">
+      <!-- Clean Header -->
+      <StackPanel Spacing="4" Margin="0,0,0,6">
+        <TextBlock Text="Export &amp; Backup Database" FontSize="18" FontWeight="Bold" Foreground="#F1F5F9" />
+        <TextBlock Text="Export database schema (DDL), table data (INSERTs), indexes, and views."
+                   FontSize="12" Foreground="#94A3B8" />
+      </StackPanel>
+
+      <!-- Step 1: Export Content & Mode -->
+      <Border Background="#171B22" BorderBrush="#262D38" BorderThickness="1" CornerRadius="8" Padding="18">
+        <StackPanel Spacing="14">
+          <TextBlock Text="1. Export Mode &amp; Options" FontSize="14" FontWeight="Bold" Foreground="#F1F5F9" />
+
+          <!-- Mode Radio Buttons -->
+          <StackPanel Spacing="6">
+            <TextBlock Text="Choose what to export:" FontSize="12" Foreground="#94A3B8" />
+            <StackPanel Orientation="Horizontal" Spacing="16">
+              <RadioButton Content="📦 Structure &amp; Data (Full Dump)"
+                           GroupName="ExportModeGroup"
+                           IsChecked="{Binding IsStructureAndDataMode}"
+                           FontSize="12" />
+              <RadioButton Content="📐 Structure Only (DDL)"
+                           GroupName="ExportModeGroup"
+                           IsChecked="{Binding IsStructureOnlyMode}"
+                           FontSize="12" />
+              <RadioButton Content="📊 Data Only (INSERTs)"
+                           GroupName="ExportModeGroup"
+                           IsChecked="{Binding IsDataOnlyMode}"
+                           FontSize="12" />
+            </StackPanel>
+          </StackPanel>
+
+          <!-- Format (if SQLite) -->
+          <StackPanel Spacing="6" IsVisible="{Binding IsSqlite}">
+            <TextBlock Text="Output Format:" FontSize="12" Foreground="#94A3B8" />
+            <StackPanel Orientation="Horizontal" Spacing="16">
+              <RadioButton Content="📄 SQL Script (.sql)"
+                           GroupName="ExportFormatGroup"
+                           IsChecked="{Binding IsSqlDumpFormat}"
+                           FontSize="12" />
+              <RadioButton Content="💾 Binary SQLite Database (.db)"
+                           GroupName="ExportFormatGroup"
+                           IsChecked="{Binding IsBinaryDbFormat}"
+                           FontSize="12" />
+            </StackPanel>
+          </StackPanel>
+
+          <!-- Checkboxes for DDL options -->
+          <StackPanel Spacing="8" Margin="0,4,0,0">
+            <CheckBox Content="Add DROP TABLE IF EXISTS statements"
+                      IsChecked="{Binding IncludeDropTable}"
+                      Foreground="#CBD5E1" />
+            <CheckBox Content="Include Indexes"
+                      IsChecked="{Binding IncludeIndexes}"
+                      Foreground="#CBD5E1" />
+            <CheckBox Content="Include Views"
+                      IsChecked="{Binding IncludeViews}"
+                      Foreground="#CBD5E1" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+
+      <!-- Step 2: Select Tables to Export -->
+      <Border Background="#171B22" BorderBrush="#262D38" BorderThickness="1" CornerRadius="8" Padding="18"
+              IsVisible="{Binding AvailableTables.Count}">
+        <StackPanel Spacing="12">
+          <Grid ColumnDefinitions="*,Auto,Auto">
+            <TextBlock Grid.Column="0" Text="{Binding SelectedTablesCountSummary, StringFormat='2. Tables to Export ({0})'}"
+                       FontSize="14" FontWeight="Bold" Foreground="#F1F5F9" VerticalAlignment="Center" />
+            <Button Grid.Column="1" Content="Select All" Command="{Binding SelectAllTablesCommand}"
+                    Background="#262D38" Foreground="#F1F5F9" FontSize="11" Padding="8,4" CornerRadius="4" Margin="0,0,6,0" />
+            <Button Grid.Column="2" Content="Deselect All" Command="{Binding DeselectAllTablesCommand}"
+                    Background="#262D38" Foreground="#94A3B8" FontSize="11" Padding="8,4" CornerRadius="4" />
+          </Grid>
+
+          <!-- Tables checklist box -->
+          <Border Background="#0F1216" BorderBrush="#262D38" BorderThickness="1" CornerRadius="6" Padding="10" MaxHeight="180">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+              <ItemsControl ItemsSource="{Binding AvailableTables}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate DataType="vm:TableSelectionItemViewModel">
+                    <CheckBox Content="{Binding TableName}"
+                              IsChecked="{Binding IsSelected}"
+                              Margin="0,2"
+                              Foreground="#F1F5F9" />
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </ScrollViewer>
+          </Border>
+        </StackPanel>
+      </Border>
+
+      <!-- Step 3: Destination & Execute Export -->
+      <Border Background="#171B22" BorderBrush="#262D38" BorderThickness="1" CornerRadius="8" Padding="18">
+        <StackPanel Spacing="12">
+          <TextBlock Text="3. Destination File &amp; Execute" FontSize="14" FontWeight="Bold" Foreground="#F1F5F9" />
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBox Grid.Column="0" Text="{Binding BackupDestinationPath}" Background="#0F1216" BorderBrush="#262D38" Margin="0,0,8,0" />
+            <Button Grid.Column="1" Content="Browse..." Click="OnBrowseBackupTargetClicked" Background="#262D38" Foreground="#F1F5F9" Padding="14,8" CornerRadius="4" />
+          </Grid>
+
+          <Button Content="🚀 Export Database Now"
+                  Command="{Binding RunBackupCommand}"
+                  IsEnabled="{Binding !IsProcessing}"
+                  Background="#10B981"
+                  Foreground="#0F1216"
+                  FontWeight="Bold"
+                  FontSize="14"
+                  Padding="24,10"
+                  CornerRadius="4"
+                  HorizontalAlignment="Left" />
+        </StackPanel>
+      </Border>
+
+      <!-- Restore Section -->
+      <Border Background="#171B22" BorderBrush="#262D38" BorderThickness="1" CornerRadius="8" Padding="18">
+        <StackPanel Spacing="12">
+          <TextBlock Text="Restore Database from Backup / SQL Dump" FontSize="14" FontWeight="Bold" Foreground="#F1F5F9" />
+          <TextBlock Text="Select source backup file (.sql or .db) to restore into the active database:" FontSize="12" Foreground="#94A3B8" />
+
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBox Grid.Column="0" Text="{Binding RestoreSourcePath}" Background="#0F1216" BorderBrush="#262D38" Margin="0,0,8,0" PlaceholderText="Select a backup file to restore..." />
+            <Button Grid.Column="1" Content="Browse..." Click="OnBrowseRestoreSourceClicked" Background="#262D38" Foreground="#F1F5F9" Padding="14,8" CornerRadius="4" />
+          </Grid>
+
+          <Button Content="⚠️ Restore Database"
+                  Command="{Binding RunRestoreCommand}"
+                  IsEnabled="{Binding !IsProcessing}"
+                  Background="#F59E0B"
+                  Foreground="#0F1216"
+                  FontWeight="Bold"
+                  FontSize="13"
+                  Padding="20,8"
+                  CornerRadius="4"
+                  HorizontalAlignment="Left" />
+        </StackPanel>
+      </Border>
+
+      <!-- Status Message Banner -->
+      <Border Background="#12151A" BorderBrush="#262D38" BorderThickness="1" CornerRadius="6" Padding="14">
+        <TextBlock Text="{Binding StatusMessage}" FontSize="12" Foreground="#34D399" TextWrapping="Wrap" />
+      </Border>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>
